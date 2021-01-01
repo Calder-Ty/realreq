@@ -1,0 +1,8 @@
+# Ignore pyc
+*/**/__pycache__/*
+*/**/*.pyc
+
+
+# Ignore Workspace Stuff
+.vscode/*
+.pytest_cache/*
