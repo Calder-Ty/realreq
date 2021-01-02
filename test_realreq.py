@@ -6,9 +6,7 @@
 # I then want to take the ones found and chek in the list of installed
 # and then check their dependencies and then write
 # packages and send them to the std out
-import os
 import unittest.mock
-import sys
 
 import pytest
 from pytest_mock import mocker
