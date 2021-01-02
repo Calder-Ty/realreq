@@ -113,7 +113,7 @@ def build_dep_list(pkgs):
             results = subprocess.run(
                 ["pip", "show", pkg], stdout=subprocess.PIPE, check=True
             )
-        except Exception:
+        except subprocess.CalledProcessError:
             errs.append(pkg)
             continue
 
