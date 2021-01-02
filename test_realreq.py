@@ -17,12 +17,17 @@ from pytest_mock import mocker
 import realreq
 
 CONTENT = """
+import os
 import requests
 from foo import bar
 from . import local_module
 import local_module2
 from foo.baz import frum
+import abbrev
 """
+
+MOCK_ALIASES = {"abbrev": "abbreviation"}
+realreq.ALIASES = MOCK_ALIASES
 
 _MOCK_DEPENDENCY_TREE = {
     "foo": ["bar"],
@@ -32,6 +37,7 @@ _MOCK_DEPENDENCY_TREE = {
     "egg": ["pip"],
     "pip": [],
     "wheel": [],
+    "abbreviation": [],
 }
 
 _MOCK_DEP_VERSIONS = {
@@ -44,6 +50,7 @@ _MOCK_DEP_VERSIONS = {
     "notused": "201.10.1",
     "DevDep": "0.1.1",
     "testDep": "0.1.3",
+    "abbreviation": "1.2.1",
 }
 
 
@@ -82,7 +89,8 @@ def source_files(tmp_path_factory):
 def test_search_source_for_used_packages(source_files):
     """Source code is searched and aquires the name of all packages used"""
     pkgs = realreq.search_source(str(source_files))
-    assert all([_ in pkgs for _ in ["requests", "foo", "local_module2"]])
+    expected = ["requests", "foo", "local_module2", "abbreviation"]
+    assert all([_ in pkgs for _ in expected])
 
 
 def test_build_dependency_list(mocker):
@@ -92,7 +100,7 @@ def test_build_dependency_list(mocker):
     mock_run = mocker.patch("subprocess.run")
     mock_run.side_effect = mock_pip_show
 
-    pkgs = ["requests", "foo", "local_module2"]
+    pkgs = ["requests", "foo", "local_module2", "abbreviation"]
     dep_tree = realreq.build_dep_list(pkgs)
     assert all([_ in dep_tree for _ in list(_MOCK_DEPENDENCY_TREE.keys())])
 
@@ -112,5 +120,6 @@ def test_get_dependency_versions(mocker):
         "egg": "13.0",
         "pip": "2.12.1",
         "wheel": "1.1.1",
+        "abbreviation": "1.2.1",
     }
 

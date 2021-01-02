@@ -4,6 +4,7 @@ Parses through the list of installed packages and explores your source code to
 identify what the real requirements of your software are.
 """
 import argparse
+import json
 import pathlib
 import re
 import subprocess
@@ -11,6 +12,13 @@ import subprocess
 IMPORT_RE = re.compile(
     r"(from )?(?(1)(?P<from>[a-zA-Z0-9._]*)|import (?P<import>[a-zA-Z0-9+._]*))"
 )
+
+with open("std_lib.json") as fi:
+    STD_LIBS = json.load(fi)["libs"]
+
+
+with open("aliases.json") as fi:
+    ALIASES = json.load(fi)
 
 
 def main():
@@ -55,14 +63,24 @@ def search_source(source):
 
     # Now we want to clean out the imports that we have
     # 1. Eliminate the imports which start with `.` These are relative
-    #   imports.
+    #   imports, and so don't matter for pip requirements
     # 2. Split imports on `.` we only want the top level module name
     # 3. Remove imports whose name begins with the same name as `source` these
     #   are local modules, not modules being installed from pip
+    # 4. Rename imports who have an Alias record
     imports = [m for m in imports if not m.startswith(".")]
     imports = [m.split(".")[0] for m in imports]
     imports = set(imports)
+
+    # FIXME: This will only work if source is the name of the project. I.E
+    # If source is a path (as it probably is, since that is what we expect to be
+    # passed into the CLI
     imports.discard(source)
+    for import_name, install_name in ALIASES.items():
+        if import_name in imports:
+            imports.remove(import_name)
+            imports.add(install_name)
+
     return imports
 
 
@@ -87,8 +105,9 @@ def build_dep_list(pkgs):
 
     while pkgs_:
         pkg = pkgs_.pop()
-        if pkg in dependencies:
+        if pkg in dependencies or pkg in STD_LIBS:
             # We've seen this already, lets not duplicate it
+            # or it is in the standard library, and won't be found by pip show
             continue
         try:
             results = subprocess.run(
@@ -105,7 +124,6 @@ def build_dep_list(pkgs):
                 p = line[9:].rstrip().split(",")
                 p = [_.strip() for _ in p]
                 dependencies[pkg] = p
-                # Add in the found dependencies and merge it in!
                 pkgs_.extend(p)
     return list(dependencies.keys())
 
