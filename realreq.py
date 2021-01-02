@@ -121,8 +121,8 @@ def build_dep_list(pkgs):
         for line in out_text:
             if line.startswith("Requires"):
                 # Requires: is 9 chars long
-                p = line[9:].rstrip().split(",")
-                p = [_.strip() for _ in p]
+                p = line[9:].strip().split(",")
+                p = [_.strip() for _ in p if _ != ""]
                 dependencies[pkg] = p
                 pkgs_.extend(p)
     return list(dependencies.keys())

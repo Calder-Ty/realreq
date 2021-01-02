@@ -7,6 +7,7 @@
 # and then check their dependencies and then write
 # packages and send them to the std out
 import unittest.mock
+import subprocess
 
 import pytest
 from pytest_mock import mocker
@@ -54,7 +55,10 @@ _MOCK_DEP_VERSIONS = {
 
 def mock_pip_show(*args, **kwargs):
     pkg = args[0][2]
-    deps = _MOCK_DEPENDENCY_TREE[pkg]
+    try:
+        deps = _MOCK_DEPENDENCY_TREE[pkg]
+    except KeyError:
+        raise subprocess.CalledProcessError(1, cmd="Test Command")
     mock_result = unittest.mock.MagicMock()
     mock_result.configure_mock(
         **{
