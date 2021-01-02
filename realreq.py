@@ -13,15 +13,19 @@ IMPORT_RE = re.compile(
     r"(from )?(?(1)(?P<from>[a-zA-Z0-9._]*)|import (?P<import>[a-zA-Z0-9+._]*))"
 )
 
-with open("std_lib.json") as fi:
+HERE_PATH = pathlib.Path(__file__).resolve().parent.absolute()
+
+# Convert pathlib.Path to str for python 3.5 compatability
+with open(str(HERE_PATH / "std_lib.json")) as fi:
     STD_LIBS = json.load(fi)["libs"]
 
 
-with open("aliases.json") as fi:
+with open(str(HERE_PATH / "aliases.json")) as fi:
     ALIASES = json.load(fi)
 
 
 def main():
+    """Application entry point"""
     app = _RealReq()
     app()
 
@@ -29,7 +33,7 @@ def main():
 class _RealReq:
     """Main Application
 
-    This will be a CLI tool used to gather information about the requirments
+    This will be a CLI tool used to gather information about the requirements
     actually used in your source code
     """
 
@@ -99,6 +103,7 @@ def _scan_for_imports(line):
 
 
 def _build_dep_list(pkgs):
+    """Builds list of dependencies"""
     errs = []
     pkgs_ = list(pkgs)
     dependencies = {}
@@ -129,6 +134,7 @@ def _build_dep_list(pkgs):
 
 
 def _get_dependency_versions(dependencies):
+    """Gets versions of dependencies"""
     results = subprocess.run(["pip", "freeze"], stdout=subprocess.PIPE, check=True)
     out_text = results.stdout.decode("utf-8").strip().split("\n")
     dep_ver = {}

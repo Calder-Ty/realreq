@@ -3,7 +3,7 @@
 # Design my Requirements
 # I want to be able to search all source code to find used packages
 # in the code
-# I then want to take the ones found and chek in the list of installed
+# I then want to take the ones found and check in the list of installed
 # and then check their dependencies and then write
 # packages and send them to the std out
 import unittest.mock
@@ -98,7 +98,7 @@ def test_search_source_for_used_packages(source_files):
 def test_build_dependency_list(mocker):
     """Dependency Tree build out should identify all the dependencies a module has"""
     # Essentially we want to make sure that the values returned from the system
-    # are what we woule get by running `pip show x`, and then getting the "Requires" value
+    # are what we would get by running `pip show x`, and then getting the "Requires" value
     mock_run = mocker.patch("subprocess.run")
     mock_run.side_effect = mock_pip_show
 
@@ -108,8 +108,7 @@ def test_build_dependency_list(mocker):
 
 
 def test_get_dependency_versions(mocker):
-    # Get list of dependencies, sift through list of installed packages
-    # and return in
+    """Dependency Versions should return dictionary with packages and versions"""
     mock_run = mocker.patch("subprocess.run")
     mock_run.side_effect = mock_pip_freeze
 
