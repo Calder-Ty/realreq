@@ -22,11 +22,11 @@ with open("aliases.json") as fi:
 
 
 def main():
-    app = Application()
+    app = _RealReq()
     app()
 
 
-class Application:
+class _RealReq:
     """Main Application
 
     This will be a CLI tool used to gather information about the requirments
@@ -42,13 +42,13 @@ class Application:
         # Find dependencies
         # Find Dependency versions
         args = self.parser.parse_args()
-        pkgs = search_source(args.source)
-        deps = build_dep_list(pkgs)
+        pkgs = _search_source(args.source)
+        deps = _build_dep_list(pkgs)
         dep_ver = _get_dependency_versions(deps)
         print("\n".join(["{0}=={1}".format(k, v) for k, v in dep_ver.items()]))
 
 
-def search_source(source):
+def _search_source(source):
     """Go through the source directory and identify all modules"""
     source_files = list(pathlib.Path(source).rglob("*.[Pp][Yy]"))
 
@@ -98,7 +98,7 @@ def _scan_for_imports(line):
         return ""
 
 
-def build_dep_list(pkgs):
+def _build_dep_list(pkgs):
     errs = []
     pkgs_ = list(pkgs)
     dependencies = {}

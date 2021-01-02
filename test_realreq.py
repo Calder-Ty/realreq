@@ -90,7 +90,7 @@ def source_files(tmp_path_factory):
 
 def test_search_source_for_used_packages(source_files):
     """Source code is searched and aquires the name of all packages used"""
-    pkgs = realreq.search_source(str(source_files))
+    pkgs = realreq._search_source(str(source_files))
     expected = ["requests", "foo", "local_module2", "abbreviation"]
     assert all([_ in pkgs for _ in expected])
 
@@ -103,7 +103,7 @@ def test_build_dependency_list(mocker):
     mock_run.side_effect = mock_pip_show
 
     pkgs = ["requests", "foo", "local_module2", "abbreviation"]
-    dep_tree = realreq.build_dep_list(pkgs)
+    dep_tree = realreq._build_dep_list(pkgs)
     assert all([_ in dep_tree for _ in list(_MOCK_DEPENDENCY_TREE.keys())])
 
 
