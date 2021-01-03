@@ -13,10 +13,11 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "Operating System :: OS Independent",
+        "Operating System :: POSIX :: Linux",
         "Development Status :: 4 - Beta",
     ],
     python_packages=["_realreq"],
+    package_data={"_realreq": ["*.json"]},
     python_requires=">=3.5",
 )
 

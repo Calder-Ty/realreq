@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+# implementaton of _realreq is private, and shouldn't be counted on as a
+# stable API
+import _realreq.realreq as realreq
+
+realreq.main()
