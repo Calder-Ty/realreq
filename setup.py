@@ -19,5 +19,6 @@ setuptools.setup(
     python_packages=["_realreq"],
     package_data={"_realreq": ["*.json"]},
     python_requires=">=3.5",
+    package_scripts=["scripts/realreq"],
 )
 
