@@ -7,13 +7,17 @@
 # and then check their dependencies and then write
 # packages and send them to the std out
 import unittest.mock
+import os
 import subprocess
+import sys
 
 import pytest
 from pytest_mock import mocker
 
 
-import realreq
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+import _realreq.realreq as realreq
 
 CONTENT = """
 import os

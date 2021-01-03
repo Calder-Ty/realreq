@@ -16,7 +16,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Development Status :: 4 - Beta",
     ],
-    scripts=["realreq.py"],
+    python_packages=["_realreq"],
     python_requires=">=3.5",
 )
 
