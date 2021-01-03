@@ -1,6 +1,7 @@
 # Ignore pyc
 */**/__pycache__/*
 */**/*.pyc
+*.egg-info/*
 
 
 # Ignore Workspace Stuff
