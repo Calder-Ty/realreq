@@ -11,10 +11,12 @@ setuptools.setup(
     description="CLI tool to gather dependencies for imports actually used by your code",
     long_description=long_description,
     long_description_content_type="text/markdown",
+    url="https://github.com/Calder-Ty/realreq",
     classifiers=[
         "Programming Language :: Python :: 3",
         "Operating System :: POSIX :: Linux",
         "Development Status :: 4 - Beta",
+        "License :: OSI Approved :: MIT License",
     ],
     python_packages=["_realreq"],
     package_data={"_realreq": ["*.json"]},
