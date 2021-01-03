@@ -6,3 +6,4 @@
 # Ignore Workspace Stuff
 .vscode/*
 .pytest_cache/*
+.tox/*
