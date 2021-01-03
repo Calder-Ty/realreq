@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Real Requirements
 
 Parses through the list of installed packages and explores your source code to
