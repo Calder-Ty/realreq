@@ -3,6 +3,8 @@
 */**/*.pyc
 *.egg-info/*
 
+./dist/*
+
 
 # Ignore Workspace Stuff
 .vscode/*
