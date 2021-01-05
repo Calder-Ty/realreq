@@ -27,6 +27,7 @@ from . import local_module
 import local_module2
 from foo.baz import frum
 import abbrev
+import src.local_module
 """
 
 MOCK_ALIASES = {"abbrev": "abbreviation"}
@@ -86,15 +87,18 @@ def mock_pip_freeze(*args, **kwargs):
 
 @pytest.fixture(scope="session")
 def source_files(tmp_path_factory):
-    src = tmp_path_factory.mktemp("src")
-    main = src / "main.py"
-    main.write_text(CONTENT)
-    return src
+    def source_dir(dir_path):
+        src = tmp_path_factory.mktemp("src")
+        main = src / "main.py"
+        main.write_text(CONTENT)
+        return src
+
+    return source_dir
 
 
 def test_search_source_for_used_packages(source_files):
     """Source code is searched and aquires the name of all packages used"""
-    pkgs = realreq._search_source(str(source_files))
+    pkgs = realreq._search_source(str(source_files("src")))
     expected = ["requests", "foo", "local_module2", "abbreviation"]
     assert all([_ in pkgs for _ in expected])
 
