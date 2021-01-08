@@ -1,5 +1,7 @@
 # realreq: real requirements for real projects
 
+![Tests](https://github.com/Calder-Ty/realreq/workflows/Tests/badge.svg)
+
 `realreq` is _the_ lightweight tool that provides you with the actual
 dependencies used by your project.
 
