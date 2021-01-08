@@ -10,6 +10,7 @@ import pathlib
 import re
 import subprocess
 
+
 IMPORT_RE = re.compile(
     r"(from )?(?(1)(?P<from>[a-zA-Z0-9._]*)|import (?P<import>[a-zA-Z0-9+._]*))"
 )
@@ -40,7 +41,9 @@ class _RealReq:
 
     def __init__(self):
         self.parser = argparse.ArgumentParser()
-        self.parser.add_argument("-s", "--source", default=".")
+        self.parser.add_argument(
+            "-s", "--source", default=pathlib.Path("."), type=pathlib.Path
+        )
 
     def __call__(self):
         # Gather imports
@@ -70,17 +73,22 @@ def _search_source(source):
     # 1. Eliminate the imports which start with `.` These are relative
     #   imports, and so don't matter for pip requirements
     # 2. Split imports on `.` we only want the top level module name
-    # 3. Remove imports whose name begins with the same name as `source` these
+    # 3. Remove STD LIB imports
+    # 4. Remove imports whose name begins with the same name as `source` these
     #   are local modules, not modules being installed from pip
-    # 4. Rename imports who have an Alias record
+    # 5. Rename imports who have an Alias record
     imports = [m for m in imports if not m.startswith(".")]
     imports = [m.split(".")[0] for m in imports]
+    imports = [m for m in imports if m not in STD_LIBS]
     imports = set(imports)
 
     # FIXME: This will only work if source is the name of the project. I.E
     # If source is a path (as it probably is, since that is what we expect to be
     # passed into the CLI
-    imports.discard(source)
+    source_module = pathlib.Path(source).stem
+    print(source)
+    print(source_module)
+    imports.discard(source_module)
     for import_name, install_name in ALIASES.items():
         if import_name in imports:
             imports.remove(import_name)
@@ -111,7 +119,7 @@ def _build_dep_list(pkgs):
 
     while pkgs_:
         pkg = pkgs_.pop()
-        if pkg in dependencies or pkg in STD_LIBS:
+        if pkg in dependencies:
             # We've seen this already, lets not duplicate it
             # or it is in the standard library, and won't be found by pip show
             continue
