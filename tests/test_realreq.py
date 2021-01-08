@@ -1,11 +1,4 @@
 # Copyright 2020 Tyler Calder
-
-# Design my Requirements
-# I want to be able to search all source code to find used packages
-# in the code
-# I then want to take the ones found and check in the list of installed
-# and then check their dependencies and then write
-# packages and send them to the std out
 import unittest.mock
 import os
 import subprocess
@@ -27,6 +20,7 @@ from . import local_module
 import local_module2
 from foo.baz import frum
 import abbrev
+import src.local_module
 """
 
 MOCK_ALIASES = {"abbrev": "abbreviation"}
@@ -84,19 +78,37 @@ def mock_pip_freeze(*args, **kwargs):
     return mock_result
 
 
-@pytest.fixture(scope="session")
-def source_files(tmp_path_factory):
-    src = tmp_path_factory.mktemp("src")
+@pytest.fixture(scope="session", params=["src", "path/to/src"])
+def source_files(
+    tmp_path_factory, request,
+):
+    path = os.path.normpath(request.param)
+    paths = path.split("/")
+    if len(paths) > 1 and isinstance(paths, list):
+        src = tmp_path_factory.mktemp(path[0], numbered=False)
+        print(paths)
+        for p in paths:
+            src = src / p
+            src.mkdir()
+    else:
+        src = tmp_path_factory.mktemp(path, numbered=False)
     main = src / "main.py"
     main.write_text(CONTENT)
+    print(src)
     return src
 
 
 def test_search_source_for_used_packages(source_files):
     """Source code is searched and aquires the name of all packages used"""
+    print(source_files)
     pkgs = realreq._search_source(str(source_files))
-    expected = ["requests", "foo", "local_module2", "abbreviation"]
-    assert all([_ in pkgs for _ in expected])
+    expected = [
+        "requests",
+        "foo",
+        "local_module2",
+        "abbreviation",
+    ]
+    assert set(pkgs) == set(expected)
 
 
 def test_build_dependency_list(mocker):
@@ -127,4 +139,14 @@ def test_get_dependency_versions(mocker):
         "wheel": "1.1.1",
         "abbreviation": "1.2.1",
     }
+
+
+# class TestCLI:
+#     """Tests for the CLI of realreq"""
+
+#     def test_source_parameter_is_treated_as_path(self, source_files, mocker):
+#         args = ["-s", "/fake/path"]
+#         app = realreq._RealReq()
+#         app(args)
+#         assert False
 
