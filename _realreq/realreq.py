@@ -44,6 +44,7 @@ class _RealReq:
         self.parser.add_argument(
             "-s", "--source", default=pathlib.Path("."), type=pathlib.Path
         )
+        self.parser.add_argument("-d", "--deep", action="store_true")
 
     def __call__(self):
         # Gather imports
@@ -51,8 +52,9 @@ class _RealReq:
         # Find Dependency versions
         args = self.parser.parse_args()
         pkgs = _search_source(args.source)
-        deps = _build_dep_list(pkgs)
-        dep_ver = _get_dependency_versions(deps)
+        if args.deep:
+            pkgs = _build_dep_list(pkgs)
+        dep_ver = _get_dependency_versions(pkgs)
         print("\n".join(["{0}=={1}".format(k, v) for k, v in dep_ver.items()]))
 
 

@@ -1,6 +1,6 @@
 # realreq: real requirements for real projects
 
-![Tests](https://github.com/Calder-Ty/realreq/workflows/Tests/badge.svg)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/calder-ty/realreq/test?style=plastic) ![PyPI - Downloads](https://img.shields.io/pypi/dm/realreq?style=plastic) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/calder-ty/realreq?style=plastic)
 
 `realreq` is _the_ lightweight tool that provides you with the actual
 dependencies used by your project.
