@@ -1,8 +1,10 @@
 # Copyright 2020 Tyler Calder
+import contextlib
 import unittest.mock
 import os
 import subprocess
 import sys
+import io
 
 import pytest
 from pytest_mock import mocker
@@ -48,6 +50,24 @@ _MOCK_DEP_VERSIONS = {
     "DevDep": "0.1.1",
     "testDep": "0.1.3",
     "abbreviation": "1.2.1",
+    "requests": "0.2.0",
+}
+
+_DEEP_DEPENDENCIES = {
+    "abbreviation": "1.2.1",
+    "baz": "0.1.0",
+    "egg": "13.0",
+    "foo": "1.0.0",
+    "pip": "2.12.1",
+    "requests": "0.2.0",
+    "spam": "3.2.12",
+    "wheel": "1.1.1",
+}
+
+_SHALLOW_DEPENDENCIES = {
+    "abbreviation": "1.2.1",
+    "foo": "1.0.0",
+    "requests": "0.2.0",
 }
 
 
@@ -78,15 +98,28 @@ def mock_pip_freeze(*args, **kwargs):
     return mock_result
 
 
+def mock_subprocess_run(*args, **kwargs):
+    """Mock calls to subprocess by routing them to the right mock"""
+    command = args[0][1]
+    if command == "show":
+        return mock_pip_show(*args, **kwargs)
+    elif command == "freeze":
+        return mock_pip_freeze(*args, **kwargs)
+
+
 @pytest.fixture(scope="session", params=["src", "path/to/src"])
 def source_files(
-    tmp_path_factory, request,
+    tmp_path_factory,
+    request,
 ):
+    """Creates a temp directory that tests different source files
+
+    returns: path to directory being used for test
+    """
     path = os.path.normpath(request.param)
     paths = path.split("/")
     if len(paths) > 1 and isinstance(paths, list):
         src = tmp_path_factory.mktemp(path[0], numbered=False)
-        print(paths)
         for p in paths:
             src = src / p
             src.mkdir()
@@ -94,13 +127,11 @@ def source_files(
         src = tmp_path_factory.mktemp(path, numbered=False)
     main = src / "main.py"
     main.write_text(CONTENT)
-    print(src)
     return src
 
 
 def test_search_source_for_used_packages(source_files):
     """Source code is searched and aquires the name of all packages used"""
-    print(source_files)
     pkgs = realreq._search_source(str(source_files))
     expected = [
         "requests",
@@ -138,15 +169,42 @@ def test_get_dependency_versions(mocker):
         "pip": "2.12.1",
         "wheel": "1.1.1",
         "abbreviation": "1.2.1",
+        "requests": "0.2.0",
     }
 
 
-# class TestCLI:
-#     """Tests for the CLI of realreq"""
+class TestCLI:
+    """Tests for the CLI of realreq"""
 
-#     def test_source_parameter_is_treated_as_path(self, source_files, mocker):
-#         args = ["-s", "/fake/path"]
-#         app = realreq._RealReq()
-#         app(args)
-#         assert False
+    @pytest.mark.parametrize("s_flag", ["-s", "--source"])
+    def test_default_flags(self, source_files, mocker, s_flag):
+        args = ["cmd", s_flag, str(source_files)]
+        mocker.patch.object(sys, "argv", args)
+        mock_run = mocker.patch("subprocess.run")
+        mock_run.side_effect = mock_subprocess_run
 
+        sbuff = io.StringIO()
+        with contextlib.redirect_stdout(sbuff):
+            app = realreq._RealReq()
+            app()
+        sbuff.seek(0)
+        assert sbuff.read() == "".join(
+            "{0}=={1}\n".format(k, v) for k, v in _SHALLOW_DEPENDENCIES.items()
+        )
+
+    @pytest.mark.parametrize("s_flag", ["-s", "--source"])
+    @pytest.mark.parametrize("d_flag", ["-d", "--deep"])
+    def test_deep_flag(self, source_files, mocker, s_flag, d_flag):
+        args = ["cmd", s_flag, str(source_files), d_flag]
+        mocker.patch.object(sys, "argv", args)
+        mock_run = mocker.patch("subprocess.run")
+        mock_run.side_effect = mock_subprocess_run
+
+        sbuff = io.StringIO()
+        with contextlib.redirect_stdout(sbuff):
+            app = realreq._RealReq()
+            app()
+        sbuff.seek(0)
+        assert sbuff.read() == "".join(
+            "{0}=={1}\n".format(k, v) for k, v in _DEEP_DEPENDENCIES.items()
+        )

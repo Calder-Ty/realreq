@@ -55,7 +55,8 @@ class _RealReq:
         if args.deep:
             pkgs = _build_dep_list(pkgs)
         dep_ver = _get_dependency_versions(pkgs)
-        print("\n".join(["{0}=={1}".format(k, v) for k, v in dep_ver.items()]))
+        sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0])
+        print("\n".join(["{0}=={1}".format(k, v) for k, v in sorted_list]))
 
 
 def _search_source(source):
@@ -88,8 +89,6 @@ def _search_source(source):
     # If source is a path (as it probably is, since that is what we expect to be
     # passed into the CLI
     source_module = pathlib.Path(source).stem
-    print(source)
-    print(source_module)
     imports.discard(source_module)
     for import_name, install_name in ALIASES.items():
         if import_name in imports:
