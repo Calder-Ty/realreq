@@ -44,6 +44,7 @@ class _RealReq:
         self.parser.add_argument(
             "-s", "--source", default=pathlib.Path("."), type=pathlib.Path
         )
+        self.parser.add_argument("-d", "--deep", action="store_true")
 
     def __call__(self):
         # Gather imports
@@ -51,9 +52,11 @@ class _RealReq:
         # Find Dependency versions
         args = self.parser.parse_args()
         pkgs = _search_source(args.source)
-        deps = _build_dep_list(pkgs)
-        dep_ver = _get_dependency_versions(deps)
-        print("\n".join(["{0}=={1}".format(k, v) for k, v in dep_ver.items()]))
+        if args.deep:
+            pkgs = _build_dep_list(pkgs)
+        dep_ver = _get_dependency_versions(pkgs)
+        sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0])
+        print("\n".join(["{0}=={1}".format(k, v) for k, v in sorted_list]))
 
 
 def _search_source(source):
@@ -86,8 +89,6 @@ def _search_source(source):
     # If source is a path (as it probably is, since that is what we expect to be
     # passed into the CLI
     source_module = pathlib.Path(source).stem
-    print(source)
-    print(source_module)
     imports.discard(source_module)
     for import_name, install_name in ALIASES.items():
         if import_name in imports:
