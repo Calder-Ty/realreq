@@ -1,10 +1,11 @@
 # Copyright 2020 Tyler Calder
+import collections
 import contextlib
+import io
 import unittest.mock
 import os
 import subprocess
 import sys
-import io
 
 import pytest
 from pytest_mock import mocker
@@ -53,22 +54,26 @@ _MOCK_DEP_VERSIONS = {
     "requests": "0.2.0",
 }
 
-_DEEP_DEPENDENCIES = {
-    "abbreviation": "1.2.1",
-    "baz": "0.1.0",
-    "egg": "13.0",
-    "foo": "1.0.0",
-    "pip": "2.12.1",
-    "requests": "0.2.0",
-    "spam": "3.2.12",
-    "wheel": "1.1.1",
-}
+_DEEP_DEPENDENCIES = collections.OrderedDict(
+    [
+        ("abbreviation", "1.2.1"),
+        ("baz", "0.1.0"),
+        ("egg", "13.0"),
+        ("foo", "1.0.0"),
+        ("pip", "2.12.1"),
+        ("requests", "0.2.0"),
+        ("spam", "3.2.12"),
+        ("wheel", "1.1.1"),
+    ]
+)
 
-_SHALLOW_DEPENDENCIES = {
-    "abbreviation": "1.2.1",
-    "foo": "1.0.0",
-    "requests": "0.2.0",
-}
+_SHALLOW_DEPENDENCIES = collections.OrderedDict(
+    [
+        ("abbreviation", "1.2.1"),
+        ("foo", "1.0.0"),
+        ("requests", "0.2.0"),
+    ]
+)
 
 
 def mock_pip_show(*args, **kwargs):
