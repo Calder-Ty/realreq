@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright 2020-2022, Tyler Calder
 """Real Requirements
 
 Parses through the list of installed packages and explores your source code to
