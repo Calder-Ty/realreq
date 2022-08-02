@@ -5,7 +5,7 @@ packaging==20.8
 pluggy==0.13.1
 py==1.10.0
 pyparsing==2.4.7
-pytest==7.1.2
+pytest>=7
 pytest-mock==3.4.0
 toml==0.10.2
 zipp==3.4.0
