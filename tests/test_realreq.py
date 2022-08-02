@@ -24,6 +24,7 @@ import local_module2
 from foo.baz import frum
 import abbrev
 import src.local_module
+import fake_pkg
 """
 
 MOCK_ALIASES = {"abbrev": "abbreviation"}
@@ -38,6 +39,7 @@ _MOCK_DEPENDENCY_TREE = {
     "pip": [],
     "wheel": [],
     "abbreviation": [],
+    "fake-pkg":[],
 }
 
 _MOCK_DEP_VERSIONS = {
@@ -52,6 +54,7 @@ _MOCK_DEP_VERSIONS = {
     "testDep": "0.1.3",
     "abbreviation": "1.2.1",
     "requests": "0.2.0",
+    "fake-pkg": "0.0.1",
 }
 
 _DEEP_DEPENDENCIES = collections.OrderedDict(
@@ -142,7 +145,8 @@ def test_search_source_for_used_packages(source_files):
         "requests",
         "foo",
         "local_module2",
-        "abbreviation",
+        "abbrev",
+        "fake_pkg",
     ]
     assert set(pkgs) == set(expected)
 
@@ -154,7 +158,7 @@ def test_build_dependency_list(mocker):
     mock_run = mocker.patch("subprocess.run")
     mock_run.side_effect = mock_pip_show
 
-    pkgs = ["requests", "foo", "local_module2", "abbreviation"]
+    pkgs = ["requests", "foo", "local_module2", "abbreviation", "fake-pkg"]
     dep_tree = realreq._build_dep_list(pkgs)
     assert all([_ in dep_tree for _ in list(_MOCK_DEPENDENCY_TREE.keys())])
 
@@ -175,6 +179,7 @@ def test_get_dependency_versions(mocker):
         "wheel": "1.1.1",
         "abbreviation": "1.2.1",
         "requests": "0.2.0",
+        "fake-pkg": "0.0.1",
     }
 
 
@@ -213,3 +218,20 @@ class TestCLI:
         assert sbuff.read() == "".join(
             "{0}=={1}\n".format(k, v) for k, v in _DEEP_DEPENDENCIES.items()
         )
+
+    
+    @pytest.mark.parametrize("s_flag", ["-s", "--source"])
+    @pytest.mark.parametrize("a_flag", ["-a", "--alias"])
+    def test_aliases(self, source_files, mocker, s_flag, a_flag, ):
+        """Makes Sure Aliases are used"""
+        args = ["cmd", s_flag, str(source_files), a_flag, "fake_pkg=fake-pkg"]
+        mocker.patch.object(sys, "argv", args)
+        mock_run = mocker.patch("subprocess.run")
+        mock_run.side_effect = mock_subprocess_run
+
+        sbuff = io.StringIO()
+        with contextlib.redirect_stdout(sbuff):
+            app = realreq._RealReq()
+            app()
+        sbuff.seek(0)
+        assert "fake-pkg==0.0.1" in sbuff.read()
