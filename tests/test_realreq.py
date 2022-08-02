@@ -1,4 +1,4 @@
-# Copyright 2020 Tyler Calder
+# Copyright 2020-2022 Tyler Calder
 import collections
 import contextlib
 import io
