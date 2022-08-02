@@ -222,9 +222,45 @@ class TestCLI:
     
     @pytest.mark.parametrize("s_flag", ["-s", "--source"])
     @pytest.mark.parametrize("a_flag", ["-a", "--alias"])
-    def test_aliases(self, source_files, mocker, s_flag, a_flag, ):
+    def test_cli_aliases(self, source_files, mocker, s_flag, a_flag, ):
         """Makes Sure Aliases are used"""
         args = ["cmd", s_flag, str(source_files), a_flag, "fake_pkg=fake-pkg"]
+        mocker.patch.object(sys, "argv", args)
+        mock_run = mocker.patch("subprocess.run")
+        mock_run.side_effect = mock_subprocess_run
+
+        sbuff = io.StringIO()
+        with contextlib.redirect_stdout(sbuff):
+            app = realreq._RealReq()
+            app()
+        sbuff.seek(0)
+        assert "fake-pkg==0.0.1" in sbuff.read()
+
+    @pytest.mark.parametrize("s_flag", ["-s", "--source"])
+    def test_file_aliases(self, source_files, tmp_path, mocker, s_flag,):
+        """Makes Sure Aliases are used"""
+        f = tmp_path / "alias_file.txt"
+        f.write_bytes(b"fake_pkg=fake-pkg")
+        args = ["cmd", s_flag, str(source_files),"--alias-file", str(f.absolute())]
+        mocker.patch.object(sys, "argv", args)
+        mock_run = mocker.patch("subprocess.run")
+        mock_run.side_effect = mock_subprocess_run
+
+        sbuff = io.StringIO()
+        with contextlib.redirect_stdout(sbuff):
+            app = realreq._RealReq()
+            app()
+        sbuff.seek(0)
+        assert "fake-pkg==0.0.1" in sbuff.read()
+
+    @pytest.mark.parametrize("s_flag", ["-s", "--source"])
+    @pytest.mark.parametrize("a_flag", ["-a", "--alias"])
+    def test_cli_overrides_file_aliases(self, source_files, tmp_path, mocker, s_flag, a_flag, ):
+        """Makes Sure Aliases are used"""
+        f = tmp_path / "alias_file.txt"
+        f.write_bytes(b"fake_pkg=false-pkg")
+
+        args = ["cmd", s_flag, str(source_files),"--alias-file", str(f.absolute()), a_flag, "fake_pkg=fake-pkg"]
         mocker.patch.object(sys, "argv", args)
         mock_run = mocker.patch("subprocess.run")
         mock_run.side_effect = mock_subprocess_run
