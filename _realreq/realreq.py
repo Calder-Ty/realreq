@@ -45,21 +45,22 @@ class _RealReq:
             "-s", "--source", default=pathlib.Path("."), type=pathlib.Path
         )
         self.parser.add_argument("-d", "--deep", action="store_true")
+        self.parser.add_argument("-a", "--alias", action="append")
+        self._args = self.parser.parse_args()
 
     def __call__(self):
         # Gather imports
         # Find dependencies
         # Find Dependency versions
-        args = self.parser.parse_args()
-        pkgs = _search_source(args.source)
-        if args.deep:
+        pkgs = _search_source(self._args.source)
+        if self._args.deep:
             pkgs = _build_dep_list(pkgs)
         dep_ver = _get_dependency_versions(pkgs)
         sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0])
         print("\n".join(["{0}=={1}".format(k, v) for k, v in sorted_list]))
 
 
-def _search_source(source):
+def _search_source(source, aliases=ALIASES):
     """Go through the source directory and identify all modules"""
     source_files = list(pathlib.Path(source).rglob("*.[Pp][Yy]"))
 
