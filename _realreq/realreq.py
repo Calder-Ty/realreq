@@ -48,6 +48,7 @@ class _RealReq:
         )
         self.parser.add_argument("-d", "--deep", action="store_true")
         self.parser.add_argument("-a", "--alias", action="append")
+        self.parser.add_argument("--alias-file", type=pathlib.Path)
         self._args = self.parser.parse_args()
 
     def __call__(self):
@@ -63,10 +64,19 @@ class _RealReq:
 
     def _read_aliases(self)->typing.Dict[str, str]:
         # Split user_aliases
-        if not self._args.alias:
+        cli_aliases = {}
+        file_aliases = {}
+
+        if not (self._args.alias or self._args.alias_file):
             return ALIASES
-        user_aliases = _split_aliases(self._args.alias)
-        return {**ALIASES, **user_aliases}
+        if self._args.alias:
+            cli_aliases = _split_aliases(self._args.alias)
+        if self._args.alias_file:
+            with self._args.alias_file.open() as fi:
+                file_aliases = _split_aliases(fi.readlines())
+
+        return {**ALIASES, **file_aliases, **cli_aliases}
+
 
 def _split_aliases(aliases: typing.List[str]) -> typing.Dict[str,str]:
     res = [a.split('=') for a in aliases]
@@ -74,7 +84,6 @@ def _split_aliases(aliases: typing.List[str]) -> typing.Dict[str,str]:
         raise ValueError("Aliases must be in format of 'IMPORT_ALIAS'='PKG_NAME'")
     return dict(res)
         
-
 
 def _search_source(source, aliases=ALIASES):
     """Go through the source directory and identify all modules"""
