@@ -9,6 +9,7 @@ import json
 import pathlib
 import re
 import subprocess
+import typing
 
 
 IMPORT_RE = re.compile(
@@ -52,12 +53,26 @@ class _RealReq:
         # Gather imports
         # Find dependencies
         # Find Dependency versions
-        pkgs = _search_source(self._args.source)
+        pkgs = _search_source(self._args.source, aliases=self._read_aliases())
         if self._args.deep:
             pkgs = _build_dep_list(pkgs)
         dep_ver = _get_dependency_versions(pkgs)
         sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0])
         print("\n".join(["{0}=={1}".format(k, v) for k, v in sorted_list]))
+
+    def _read_aliases(self)->typing.Dict[str, str]:
+        # Split user_aliases
+        if not self._args.alias:
+            return ALIASES
+        user_aliases = _split_aliases(self._args.alias)
+        return {**ALIASES, **user_aliases}
+
+def _split_aliases(aliases: typing.List[str]) -> typing.Dict[str,str]:
+    res = [a.split('=') for a in aliases]
+    if any([len(_) != 2 for _ in res]):
+        raise ValueError("Aliases must be in format of 'IMPORT_ALIAS'='PKG_NAME'")
+    return dict(res)
+        
 
 
 def _search_source(source, aliases=ALIASES):
@@ -91,7 +106,7 @@ def _search_source(source, aliases=ALIASES):
     # passed into the CLI
     source_module = pathlib.Path(source).stem
     imports.discard(source_module)
-    for import_name, install_name in ALIASES.items():
+    for import_name, install_name in aliases.items():
         if import_name in imports:
             imports.remove(import_name)
             imports.add(install_name)
