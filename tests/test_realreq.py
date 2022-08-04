@@ -39,7 +39,7 @@ _MOCK_DEPENDENCY_TREE = {
     "pip": [],
     "wheel": [],
     "abbreviation": [],
-    "fake-pkg":[],
+    "fake-pkg": [],
 }
 
 _MOCK_DEP_VERSIONS = {
@@ -80,19 +80,21 @@ _SHALLOW_DEPENDENCIES = collections.OrderedDict(
 
 
 def mock_pip_show(*args, **kwargs):
-    pkg = args[0][2]
-    try:
-        deps = _MOCK_DEPENDENCY_TREE[pkg]
-    except KeyError:
-        raise subprocess.CalledProcessError(1, cmd="Test Command")
+    pkgs = args[0][2:]
+    pkg_output = []
+    for pkg in pkgs:
+        try:
+            deps = _MOCK_DEPENDENCY_TREE[pkg]
+        except KeyError:
+            continue
+        pkg_output.append(
+            "Name: {name}\nstuff\nRequires: {deps}\nmore stuff\n".format(
+                name=pkg, deps=", ".join(deps)
+            )
+        )
+
     mock_result = unittest.mock.MagicMock()
-    mock_result.configure_mock(
-        **{
-            "stdout": "stuff\nRequires: {0}\nmore stuff".format(
-                ", ".join(deps)
-            ).encode()
-        }
-    )
+    mock_result.configure_mock(**{"stdout": "---\n".join(pkg_output).encode()})
 
     return mock_result
 
@@ -219,10 +221,15 @@ class TestCLI:
             "{0}=={1}\n".format(k, v) for k, v in _DEEP_DEPENDENCIES.items()
         )
 
-    
     @pytest.mark.parametrize("s_flag", ["-s", "--source"])
     @pytest.mark.parametrize("a_flag", ["-a", "--alias"])
-    def test_cli_aliases(self, source_files, mocker, s_flag, a_flag, ):
+    def test_cli_aliases(
+        self,
+        source_files,
+        mocker,
+        s_flag,
+        a_flag,
+    ):
         """Makes Sure Aliases are used"""
         args = ["cmd", s_flag, str(source_files), a_flag, "fake_pkg=fake-pkg"]
         mocker.patch.object(sys, "argv", args)
@@ -237,11 +244,17 @@ class TestCLI:
         assert "fake-pkg==0.0.1" in sbuff.read()
 
     @pytest.mark.parametrize("s_flag", ["-s", "--source"])
-    def test_file_aliases(self, source_files, tmp_path, mocker, s_flag,):
+    def test_file_aliases(
+        self,
+        source_files,
+        tmp_path,
+        mocker,
+        s_flag,
+    ):
         """Makes Sure Aliases are used"""
         f = tmp_path / "alias_file.txt"
         f.write_bytes(b"fake_pkg=fake-pkg")
-        args = ["cmd", s_flag, str(source_files),"--alias-file", str(f.absolute())]
+        args = ["cmd", s_flag, str(source_files), "--alias-file", str(f.absolute())]
         mocker.patch.object(sys, "argv", args)
         mock_run = mocker.patch("subprocess.run")
         mock_run.side_effect = mock_subprocess_run
@@ -255,12 +268,27 @@ class TestCLI:
 
     @pytest.mark.parametrize("s_flag", ["-s", "--source"])
     @pytest.mark.parametrize("a_flag", ["-a", "--alias"])
-    def test_cli_overrides_file_aliases(self, source_files, tmp_path, mocker, s_flag, a_flag, ):
+    def test_cli_overrides_file_aliases(
+        self,
+        source_files,
+        tmp_path,
+        mocker,
+        s_flag,
+        a_flag,
+    ):
         """Makes Sure Aliases are used"""
         f = tmp_path / "alias_file.txt"
         f.write_bytes(b"fake_pkg=false-pkg")
 
-        args = ["cmd", s_flag, str(source_files),"--alias-file", str(f.absolute()), a_flag, "fake_pkg=fake-pkg"]
+        args = [
+            "cmd",
+            s_flag,
+            str(source_files),
+            "--alias-file",
+            str(f.absolute()),
+            a_flag,
+            "fake_pkg=fake-pkg",
+        ]
         mocker.patch.object(sys, "argv", args)
         mock_run = mocker.patch("subprocess.run")
         mock_run.side_effect = mock_subprocess_run
