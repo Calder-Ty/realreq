@@ -2,9 +2,14 @@
 
 ## [unreleased]
 
+## 0.5.1
+### Fixes/Improvements
+- Resolve a [bug](https://github.com/Calder-Ty/realreq/issues/11) where realreq would crash on
+unrecognized version format.
+
 ## 0.5.0
 ### Fixes/Improvements
-- Significant performance improvements for larger codebases, when doing a deep search (14x improvements in some cases)
+- Significant performance improvements for larger codebases, when doing a deep search (14x improvements in some cases).
 
 ## 0.4.0
 ### Added
