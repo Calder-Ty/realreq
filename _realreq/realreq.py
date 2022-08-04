@@ -66,7 +66,7 @@ class _RealReq:
             pkgs = _build_dep_list(pkgs)
         dep_ver = _get_dependency_versions(pkgs)
         sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0])
-        print("\n".join(["{0}=={1}".format(k, v) for k, v in sorted_list]))
+        print("\n".join(["{0}".format(v) for _, v in sorted_list]))
 
     def _read_aliases(self) -> typing.Dict[str, str]:
         # Split user_aliases
@@ -211,8 +211,11 @@ def _parse_versions(freeze_out: bytes) -> typing.Dict[str, str]:
     out_text = freeze_out.decode("utf-8").strip().split("\n")
     versions = {}
     for line in out_text:
-        dep, ver = line.split("==")
-        versions[dep] = ver
+        if "==" in line:
+            dep, _ = line.split("==")
+        else:
+            dep, _ = line.split(" ", maxsplit=1)
+        versions[dep] = line
     return versions
 
 

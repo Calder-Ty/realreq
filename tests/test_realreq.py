@@ -173,21 +173,25 @@ def test_get_dependency_versions(mocker):
     pkgs = _MOCK_DEPENDENCY_TREE.keys()
     versions = realreq._get_dependency_versions(pkgs)
     assert versions == {
-        "foo": "1.0.0",
-        "baz": "0.1.0",
-        "spam": "3.2.12",
-        "egg": "13.0",
-        "pip": "2.12.1",
-        "wheel": "1.1.1",
-        "abbreviation": "1.2.1",
-        "requests": "0.2.0",
-        "fake-pkg": "0.0.1",
+        "foo": "foo==1.0.0",
+        "baz": "baz==0.1.0",
+        "spam": "spam==3.2.12",
+        "egg": "egg==13.0",
+        "pip": "pip==2.12.1",
+        "wheel": "wheel==1.1.1",
+        "abbreviation": "abbreviation==1.2.1",
+        "requests": "requests==0.2.0",
+        "fake-pkg": "fake-pkg==0.0.1",
     }
 
 
 def test_parse_versions():
-    out_ = b"foo==1.0.0\nbaz==0.1.0\n"
-    assert {"foo": "1.0.0", "baz": "0.1.0"} == realreq._parse_versions(out_)
+    out_ = b"foo==1.0.0\nbaz==0.1.0\ngit-repo @ git+https://github.com/gitrepo@commit"
+    assert {
+        "foo": "foo==1.0.0",
+        "baz": "baz==0.1.0",
+        "git-repo": "git-repo @ git+https://github.com/gitrepo@commit",
+    } == realreq._parse_versions(out_)
 
 
 class TestCLI:
