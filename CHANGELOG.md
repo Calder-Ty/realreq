@@ -2,8 +2,9 @@
 
 ## [unreleased]
 
-### Fixes/Improvments
-- Significant performance improvements for larger repositories(14.00x improvements in some cases)
+## 0.5.0
+### Fixes/Improvements
+- Significant performance improvements for larger codebases, when doing a deep search (14x improvements in some cases)
 
 ## 0.4.0
 ### Added

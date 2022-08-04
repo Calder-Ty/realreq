@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="realreq",
-    version="0.4.0",
+    version="0.5.0",
     author="Tyler Calder",
     author_email="calder-ty@protonmail.com",
     description="CLI tool to gather dependencies for imports actually used by your code",
@@ -21,9 +21,10 @@ setuptools.setup(
         "Operating System :: POSIX :: Linux",
         "Development Status :: 4 - Beta",
         "License :: OSI Approved :: MIT License",
+        "Topic :: Software Development :: Build Tools",
     ],
     packages=["_realreq"],
     package_data={"_realreq": ["*.json"]},
-    python_requires=">=3.5",
+    python_requires=">=3.6",
     entry_points={"console_scripts": ["realreq=_realreq.realreq:main"]},
 )
