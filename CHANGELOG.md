@@ -2,6 +2,10 @@
 
 ## [unreleased]
 
+## 0.5.2
+### Fixes/Improvements
+- Resolves a bug with alias-file specification that doesn't strip newlines
+
 ## 0.5.1
 ### Fixes/Improvements
 - Resolve a [bug](https://github.com/Calder-Ty/realreq/issues/11) where realreq would crash on
