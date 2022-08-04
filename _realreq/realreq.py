@@ -34,6 +34,11 @@ def main():
     app()
 
 
+class _ParsedShowOutput(typing.NamedTuple):
+    name: str
+    deps: typing.List[str]
+
+
 class _RealReq:
     """Main Application
 
@@ -141,32 +146,46 @@ def _scan_for_imports(line):
 def _build_dep_list(pkgs):
     """Builds list of dependencies"""
     errs = []
-    pkgs_ = list(pkgs)
+    pkgs_ = set(pkgs)
     dependencies = {}
 
     while pkgs_:
-        pkg = pkgs_.pop()
-        if pkg in dependencies:
-            # We've seen this already, lets not duplicate it
-            # or it is in the standard library, and won't be found by pip show
-            continue
         try:
             results = subprocess.run(
-                ["pip", "show", pkg], stdout=subprocess.PIPE, check=True
+                [
+                    "pip",
+                    "show",
+                ]
+                + list(pkgs_),
+                stdout=subprocess.PIPE,
+                check=True,
             )
         except subprocess.CalledProcessError:
             errs.append(pkg)
             continue
 
-        out_text = results.stdout.decode("utf-8").split("\n")
-        for line in out_text:
-            if line.startswith("Requires"):
-                # Requires: is 9 chars long
-                p = line[9:].strip().split(",")
-                p = [_.strip() for _ in p if _ != ""]
-                dependencies[pkg] = p
-                pkgs_.extend(p)
+        found_deps = set()
+        for out in results.stdout.decode().split("---\n"):
+            p = _get_deps_from_output(out)
+            dependencies[p.name] = p.deps
+            found_deps |= set(p.deps)
+
+        # Clean up pkgs_ to only be new dependencies that need to be searched
+        pkgs_ = found_deps - pkgs_
     return list(dependencies.keys())
+
+
+def _get_deps_from_output(out: str) -> _ParsedShowOutput:
+    out_text = out.split("\n")
+    deps = []
+    for line in out_text:
+        if line.startswith("Name"):
+            name = line[5:].strip()
+        elif line.startswith("Requires"):
+            # Requires: is 9 chars long
+            deps = line[9:].strip().split(",")
+            deps = [_.strip() for _ in deps if _ != ""]
+    return _ParsedShowOutput(name=name, deps=deps)
 
 
 def _get_dependency_versions(dependencies):
