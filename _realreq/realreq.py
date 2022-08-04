@@ -6,6 +6,7 @@ Parses through the list of installed packages and explores your source code to
 identify what the real requirements of your software are.
 """
 import argparse
+import enum
 import json
 import pathlib
 import re
@@ -191,13 +192,31 @@ def _get_deps_from_output(out: str) -> _ParsedShowOutput:
 def _get_dependency_versions(dependencies):
     """Gets versions of dependencies"""
     results = subprocess.run(["pip", "freeze"], stdout=subprocess.PIPE, check=True)
-    out_text = results.stdout.decode("utf-8").strip().split("\n")
-    dep_ver = {}
+    versions = _parse_versions(results.stdout)
+    dep_ver = dict(filter(lambda i: i[0] in dependencies, versions.items()))
+    return dep_ver
+
+
+class VersionFormat(enum.Enum):
+    SEMANTIC = "semantic"
+    GIT = "git"
+
+
+class DependencyVersion(typing.NamedTuple):
+    name: str
+    version: str
+    format_: VersionFormat
+
+def _parse_versions(freeze_out: bytes) -> typing.Dict[str, str]:
+    out_text = freeze_out.decode("utf-8").strip().split("\n")
+    versions = {}
     for line in out_text:
         dep, ver = line.split("==")
-        if dep in dependencies:
-            dep_ver[dep] = ver
-    return dep_ver
+        versions[dep] = ver
+    return versions
+
+
+
 
 
 if __name__ == "__main__":
