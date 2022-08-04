@@ -62,7 +62,7 @@ class _RealReq:
         sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0])
         print("\n".join(["{0}=={1}".format(k, v) for k, v in sorted_list]))
 
-    def _read_aliases(self)->typing.Dict[str, str]:
+    def _read_aliases(self) -> typing.Dict[str, str]:
         # Split user_aliases
         cli_aliases = {}
         file_aliases = {}
@@ -78,12 +78,12 @@ class _RealReq:
         return {**ALIASES, **file_aliases, **cli_aliases}
 
 
-def _split_aliases(aliases: typing.List[str]) -> typing.Dict[str,str]:
-    res = [a.split('=') for a in aliases]
+def _split_aliases(aliases: typing.List[str]) -> typing.Dict[str, str]:
+    res = [a.split("=") for a in aliases]
     if any([len(_) != 2 for _ in res]):
         raise ValueError("Aliases must be in format of 'IMPORT_ALIAS'='PKG_NAME'")
     return dict(res)
-        
+
 
 def _search_source(source, aliases=ALIASES):
     """Go through the source directory and identify all modules"""
