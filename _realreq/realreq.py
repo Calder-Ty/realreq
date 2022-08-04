@@ -85,7 +85,7 @@ class _RealReq:
 
 
 def _split_aliases(aliases: typing.List[str]) -> typing.Dict[str, str]:
-    res = [a.split("=") for a in aliases]
+    res = [a.strip().split("=") for a in aliases]
     if any([len(_) != 2 for _ in res]):
         raise ValueError("Aliases must be in format of 'IMPORT_ALIAS'='PKG_NAME'")
     return dict(res)
