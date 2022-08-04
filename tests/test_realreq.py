@@ -185,6 +185,11 @@ def test_get_dependency_versions(mocker):
     }
 
 
+def test_parse_versions():
+    out_ = b"foo==1.0.0\nbaz==0.1.0\n"
+    assert {"foo": "1.0.0", "baz": "0.1.0"} == realreq._parse_versions(out_)
+
+
 class TestCLI:
     """Tests for the CLI of realreq"""
 
