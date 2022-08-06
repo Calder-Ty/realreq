@@ -4,6 +4,9 @@
 
 Parses through the list of installed packages and explores your source code to
 identify what the real requirements of your software are.
+
+The entirety of the implementation is considered private and shouldn't be relied
+on for as a stable interface.
 """
 import argparse
 import enum
@@ -31,16 +34,16 @@ with open(str(HERE_PATH / "aliases.json")) as fi:
 
 def main():
     """Application entry point"""
-    app = _RealReq()
+    app = RealReq()
     app()
 
 
-class _ParsedShowOutput(typing.NamedTuple):
+class ParsedShowOutput(typing.NamedTuple):
     name: str
     deps: typing.List[str]
 
 
-class _RealReq:
+class RealReq:
     """Main Application
 
     This will be a CLI tool used to gather information about the requirements
@@ -61,10 +64,10 @@ class _RealReq:
         # Gather imports
         # Find dependencies
         # Find Dependency versions
-        pkgs = _search_source(self._args.source, aliases=self._read_aliases())
+        pkgs = search_source(self._args.source, aliases=self._read_aliases())
         if self._args.deep:
-            pkgs = _build_dep_list(pkgs)
-        dep_ver = _get_dependency_versions(pkgs)
+            pkgs = build_dep_list(pkgs)
+        dep_ver = get_dependency_versions(pkgs)
         sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0])
         print("\n".join(["{0}".format(v) for _, v in sorted_list]))
 
@@ -76,22 +79,22 @@ class _RealReq:
         if not (self._args.alias or self._args.alias_file):
             return ALIASES
         if self._args.alias:
-            cli_aliases = _split_aliases(self._args.alias)
+            cli_aliases = split_aliases(self._args.alias)
         if self._args.alias_file:
             with self._args.alias_file.open() as fi:
-                file_aliases = _split_aliases(fi.readlines())
+                file_aliases = split_aliases(fi.readlines())
 
         return {**ALIASES, **file_aliases, **cli_aliases}
 
 
-def _split_aliases(aliases: typing.List[str]) -> typing.Dict[str, str]:
+def split_aliases(aliases: typing.List[str]) -> typing.Dict[str, str]:
     res = [a.strip().split("=") for a in aliases]
     if any([len(_) != 2 for _ in res]):
         raise ValueError("Aliases must be in format of 'IMPORT_ALIAS'='PKG_NAME'")
     return dict(res)
 
 
-def _search_source(source, aliases=ALIASES):
+def search_source(source, aliases=ALIASES):
     """Go through the source directory and identify all modules"""
     source_files = list(pathlib.Path(source).rglob("*.[Pp][Yy]"))
 
@@ -100,7 +103,7 @@ def _search_source(source, aliases=ALIASES):
         with file_.open() as f:
             lines = f.readlines()
         for line in lines:
-            module = _scan_for_imports(line)
+            module = scan_for_imports(line)
             if module:
                 imports.append(module)
 
@@ -117,9 +120,6 @@ def _search_source(source, aliases=ALIASES):
     imports = [m for m in imports if m not in STD_LIBS]
     imports = set(imports)
 
-    # FIXME: This will only work if source is the name of the project. I.E
-    # If source is a path (as it probably is, since that is what we expect to be
-    # passed into the CLI
     source_module = pathlib.Path(source).stem
     imports.discard(source_module)
     for import_name, install_name in aliases.items():
@@ -130,7 +130,7 @@ def _search_source(source, aliases=ALIASES):
     return imports
 
 
-def _scan_for_imports(line):
+def scan_for_imports(line):
     """Scans line for import syntax, returning the name of the module imported"""
     lm = IMPORT_RE.match(line)
     if lm:
@@ -144,7 +144,7 @@ def _scan_for_imports(line):
         return ""
 
 
-def _build_dep_list(pkgs):
+def build_dep_list(pkgs):
     """Builds list of dependencies"""
     errs = []
     pkgs_ = set(pkgs)
@@ -167,7 +167,7 @@ def _build_dep_list(pkgs):
 
         found_deps = set()
         for out in results.stdout.decode().split("---\n"):
-            p = _get_deps_from_output(out)
+            p = get_deps_from_output(out)
             dependencies[p.name] = p.deps
             found_deps |= set(p.deps)
 
@@ -176,7 +176,7 @@ def _build_dep_list(pkgs):
     return list(dependencies.keys())
 
 
-def _get_deps_from_output(out: str) -> _ParsedShowOutput:
+def get_deps_from_output(out: str) -> ParsedShowOutput:
     out_text = out.split("\n")
     deps = []
     for line in out_text:
@@ -186,18 +186,18 @@ def _get_deps_from_output(out: str) -> _ParsedShowOutput:
             # Requires: is 9 chars long
             deps = line[9:].strip().split(",")
             deps = [_.strip() for _ in deps if _ != ""]
-    return _ParsedShowOutput(name=name, deps=deps)
+    return ParsedShowOutput(name=name, deps=deps)
 
 
-def _get_dependency_versions(dependencies):
+def get_dependency_versions(dependencies):
     """Gets versions of dependencies"""
     results = subprocess.run(["pip", "freeze"], stdout=subprocess.PIPE, check=True)
-    versions = _parse_versions(results.stdout)
+    versions = parse_versions(results.stdout)
     dep_ver = dict(filter(lambda i: i[0] in dependencies, versions.items()))
     return dep_ver
 
 
-def _parse_versions(freeze_out: bytes) -> typing.Dict[str, str]:
+def parse_versions(freeze_out: bytes) -> typing.Dict[str, str]:
     out_text = freeze_out.decode("utf-8").strip().split("\n")
     versions = {}
     for line in out_text:
