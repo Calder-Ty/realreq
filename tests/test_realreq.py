@@ -142,7 +142,7 @@ def source_files(
 
 def test_search_source_for_used_packages(source_files):
     """Source code is searched and aquires the name of all packages used"""
-    pkgs = realreq._search_source(str(source_files))
+    pkgs = realreq.search_source(str(source_files))
     expected = [
         "requests",
         "foo",
@@ -161,7 +161,7 @@ def test_build_dependency_list(mocker):
     mock_run.side_effect = mock_pip_show
 
     pkgs = ["requests", "foo", "local_module2", "abbreviation", "fake-pkg"]
-    dep_tree = realreq._build_dep_list(pkgs)
+    dep_tree = realreq.build_dep_list(pkgs)
     assert all([_ in dep_tree for _ in list(_MOCK_DEPENDENCY_TREE.keys())])
 
 
@@ -171,7 +171,7 @@ def test_get_dependency_versions(mocker):
     mock_run.side_effect = mock_pip_freeze
 
     pkgs = _MOCK_DEPENDENCY_TREE.keys()
-    versions = realreq._get_dependency_versions(pkgs)
+    versions = realreq.get_dependency_versions(pkgs)
     assert versions == {
         "foo": "foo==1.0.0",
         "baz": "baz==0.1.0",
@@ -191,7 +191,7 @@ def test_parse_versions():
         "foo": "foo==1.0.0",
         "baz": "baz==0.1.0",
         "git-repo": "git-repo @ git+https://github.com/gitrepo@commit",
-    } == realreq._parse_versions(out_)
+    } == realreq.parse_versions(out_)
 
 
 class TestCLI:
@@ -206,7 +206,7 @@ class TestCLI:
 
         sbuff = io.StringIO()
         with contextlib.redirect_stdout(sbuff):
-            app = realreq._RealReq()
+            app = realreq.RealReq()
             app()
         sbuff.seek(0)
         assert sbuff.read() == "".join(
@@ -223,7 +223,7 @@ class TestCLI:
 
         sbuff = io.StringIO()
         with contextlib.redirect_stdout(sbuff):
-            app = realreq._RealReq()
+            app = realreq.RealReq()
             app()
         sbuff.seek(0)
         assert sbuff.read() == "".join(
@@ -247,7 +247,7 @@ class TestCLI:
 
         sbuff = io.StringIO()
         with contextlib.redirect_stdout(sbuff):
-            app = realreq._RealReq()
+            app = realreq.RealReq()
             app()
         sbuff.seek(0)
         assert "fake-pkg==0.0.1" in sbuff.read()
@@ -270,7 +270,7 @@ class TestCLI:
 
         sbuff = io.StringIO()
         with contextlib.redirect_stdout(sbuff):
-            app = realreq._RealReq()
+            app = realreq.RealReq()
             app()
         sbuff.seek(0)
         assert "fake-pkg==0.0.1" in sbuff.read()
@@ -304,7 +304,7 @@ class TestCLI:
 
         sbuff = io.StringIO()
         with contextlib.redirect_stdout(sbuff):
-            app = realreq._RealReq()
+            app = realreq.RealReq()
             app()
         sbuff.seek(0)
         assert "fake-pkg==0.0.1" in sbuff.read()
