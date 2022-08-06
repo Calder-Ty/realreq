@@ -197,16 +197,6 @@ def _get_dependency_versions(dependencies):
     return dep_ver
 
 
-class VersionFormat(enum.Enum):
-    SEMANTIC = "semantic"
-    GIT = "git"
-
-
-class DependencyVersion(typing.NamedTuple):
-    name: str
-    version: str
-    format_: VersionFormat
-
 def _parse_versions(freeze_out: bytes) -> typing.Dict[str, str]:
     out_text = freeze_out.decode("utf-8").strip().split("\n")
     versions = {}
@@ -217,9 +207,6 @@ def _parse_versions(freeze_out: bytes) -> typing.Dict[str, str]:
             dep, _ = line.split(" ", maxsplit=1)
         versions[dep] = line
     return versions
-
-
-
 
 
 if __name__ == "__main__":
