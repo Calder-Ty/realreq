@@ -51,13 +51,33 @@ class RealReq:
     """
 
     def __init__(self):
-        self.parser = argparse.ArgumentParser()
-        self.parser.add_argument(
-            "-s", "--source", default=pathlib.Path("."), type=pathlib.Path
+        self.parser = argparse.ArgumentParser(
+            epilog="A command line tool for gathering the actual requirements from your python source code."
         )
-        self.parser.add_argument("-d", "--deep", action="store_true")
-        self.parser.add_argument("-a", "--alias", action="append")
-        self.parser.add_argument("--alias-file", type=pathlib.Path)
+        self.parser.add_argument(
+            "-d",
+            "--deep",
+            action="store_true",
+            help="Conduct a recursive search to completely define your dependencies (recommended for executable distributions).",
+        )
+        self.parser.add_argument(
+            "-s",
+            "--source",
+            default=pathlib.Path("."),
+            type=pathlib.Path,
+            help="Path to your source file (Defaults to the current directory).",
+        )
+        self.parser.add_argument(
+            "-a",
+            "--alias",
+            action="append",
+            help="Set an alias for package names in <import name>=<install name> format. Can be specified multiple times.",
+        )
+        self.parser.add_argument(
+            "--alias-file",
+            type=pathlib.Path,
+            help="Path to text file containing aliases in <import name>=<install name> format",
+        )
         self._args = self.parser.parse_args()
 
     def __call__(self):
