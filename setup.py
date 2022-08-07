@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="realreq",
-    version="0.5.2",
+    version="0.6.0",
     author="Tyler Calder",
     author_email="calder-ty@protonmail.com",
     description="CLI tool to gather dependencies for imports actually used by your code",
