@@ -2,6 +2,10 @@
 
 ## [unreleased]
 
+## 0.6.0
+### Added
+- Added help messages for CLI
+
 ## 0.5.2
 ### Fixes/Improvements
 - Resolves a bug with alias-file specification that doesn't strip newlines
