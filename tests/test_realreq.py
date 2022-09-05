@@ -14,6 +14,7 @@ from pytest_mock import mocker
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import _realreq.realreq as realreq
+import _realreq.requtils as requtils
 
 CONTENT = """
 import os
@@ -161,7 +162,7 @@ def test_build_dependency_list(mocker):
     mock_run.side_effect = mock_pip_show
 
     pkgs = ["requests", "foo", "local_module2", "abbreviation", "fake-pkg"]
-    dep_tree = realreq.build_dep_list(pkgs)
+    dep_tree = requtils.build_dep_list(pkgs)
     assert all([_ in dep_tree for _ in list(_MOCK_DEPENDENCY_TREE.keys())])
 
 
@@ -171,7 +172,7 @@ def test_get_dependency_versions(mocker):
     mock_run.side_effect = mock_pip_freeze
 
     pkgs = _MOCK_DEPENDENCY_TREE.keys()
-    versions = realreq.get_dependency_versions(pkgs)
+    versions = requtils.get_dependency_versions(pkgs)
     assert versions == {
         "foo": "foo==1.0.0",
         "baz": "baz==0.1.0",
@@ -191,7 +192,7 @@ def test_parse_versions():
         "foo": "foo==1.0.0",
         "baz": "baz==0.1.0",
         "git-repo": "git-repo @ git+https://github.com/gitrepo@commit",
-    } == realreq.parse_versions(out_)
+    } == requtils.parse_versions(out_)
 
 
 class TestCLI:
