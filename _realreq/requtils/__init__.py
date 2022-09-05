@@ -64,6 +64,22 @@ def build_dep_tree(pkgs: typing.List[str]) -> typing.Dict[str, typing.List[str]]
     return dependencies
 
 
+def invert_tree(
+    dependency_tree: typing.Dict[str, typing.List[str]]
+) -> typing.Dict[str, typing.List[str]]:
+    inverted_tree: typing.Dict[str, typing.List[str]] = {}
+    for pkg, deps in dependency_tree.items():
+        if not deps:
+            # When a package has no dependencies, and is
+            # not depended upon by anything but the source
+            # it would not be tracked. Here we make sure it is.
+            inverted_tree.setdefault(pkg, [])
+        for dep in deps:
+            required_by = inverted_tree.setdefault(dep, [])
+            required_by.append(pkg)
+    return inverted_tree
+
+
 def get_deps_from_output(out: str) -> ParsedShowOutput:
     out_text = out.split("\n")
     deps = []
