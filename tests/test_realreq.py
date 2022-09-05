@@ -43,6 +43,18 @@ _MOCK_DEPENDENCY_TREE = {
     "fake-pkg": [],
 }
 
+_MOCK_DEPENDENCY_TREE_INVERTED = {
+    "bar": ["foo"],
+    "baz": ["requests"],
+    "spam": ["requests"],
+    "egg": ["spam"],
+    "wheel": ["spam"],
+    "pip": ["egg"],
+    "abbreviation": [],
+    "fake-pkg": [],
+}
+
+
 _MOCK_DEP_VERSIONS = {
     "foo": "1.0.0",
     "baz": "0.1.0",
@@ -164,6 +176,17 @@ def test_build_dependency_list(mocker):
     pkgs = ["requests", "foo", "local_module2", "abbreviation", "fake-pkg"]
     dep_tree = requtils.build_dep_list(pkgs)
     assert all([_ in dep_tree for _ in list(_MOCK_DEPENDENCY_TREE.keys())])
+
+
+def test_invert_tree(mocker):
+    """Test that we can invert our dependency tree"""
+    mock_run = mocker.patch("subprocess.run")
+    mock_run.side_effect = mock_pip_show
+
+    pkgs = ["requests", "foo", "local_module2", "abbreviation", "fake-pkg"]
+    dep_tree = requtils.build_dep_tree(pkgs)
+    inverted = requtils.invert_tree(dep_tree)
+    assert inverted == _MOCK_DEPENDENCY_TREE_INVERTED
 
 
 def test_get_dependency_versions(mocker):
