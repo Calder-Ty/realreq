@@ -12,7 +12,7 @@ import argparse
 import json
 import pathlib
 import typing
-from . import requtils
+from . import requtils, display
 
 
 HERE_PATH = pathlib.Path(__file__).resolve().parent.absolute()
@@ -70,15 +70,18 @@ class RealReq:
         self._args = self.parser.parse_args()
 
     def __call__(self):
-        # Gather imports
-        # Find dependencies
-        # Find Dependency versions
         pkgs = search_source(self._args.source, aliases=self._read_aliases())
+
         if self._args.deep:
-            pkgs = requtils.build_dep_list(pkgs)
-        dep_ver = requtils.get_dependency_versions(pkgs)
-        sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0])
-        print("\n".join(["{0}".format(v) for _, v in sorted_list]))
+            tree = requtils.build_dep_tree(pkgs)
+            display.FreezeDisplay.display(tree)
+
+        # TODO: Shallow search doesn't generate a tree, but a list so for now
+        # We handle seperately, lets unify the handling
+        else:
+            dep_ver = requtils.get_dependency_versions(pkgs)
+            sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0])
+            print("\n".join(["{0}".format(v) for _, v in sorted_list]))
 
     def _read_aliases(self) -> typing.Dict[str, str]:
         # Split user_aliases
