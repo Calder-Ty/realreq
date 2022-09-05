@@ -3,9 +3,11 @@ import re
 import subprocess
 import typing
 
+
 IMPORT_RE = re.compile(
     r"(from )?(?(1)(?P<from>[a-zA-Z0-9._]*)|import (?P<import>[a-zA-Z0-9+._]*))"
 )
+PIP_SHOW_SEP = "---\n"
 
 
 class ParsedShowOutput(typing.NamedTuple):
@@ -29,7 +31,10 @@ def scan_for_imports(line):
 
 def build_dep_list(pkgs):
     """Builds list of dependencies"""
-    errs = []
+    return list(build_dep_tree(pkgs).keys())
+
+
+def build_dep_tree(pkgs: typing.List[str]) -> typing.Dict[str, typing.List[str]]:
     pkgs_ = set(pkgs)
     dependencies = {}
 
@@ -45,18 +50,18 @@ def build_dep_list(pkgs):
                 check=True,
             )
         except subprocess.CalledProcessError:
-            errs.append(pkg)
+            # FIXME: No Error message or tracking happening
             continue
 
         found_deps = set()
-        for out in results.stdout.decode().split("---\n"):
+        for out in results.stdout.decode().split(PIP_SHOW_SEP):
             p = get_deps_from_output(out)
             dependencies[p.name] = p.deps
             found_deps |= set(p.deps)
 
         # Clean up pkgs_ to only be new dependencies that need to be searched
         pkgs_ = found_deps - pkgs_
-    return list(dependencies.keys())
+    return dependencies
 
 
 def get_deps_from_output(out: str) -> ParsedShowOutput:
