@@ -30,7 +30,7 @@ class TreeDisplay:
         sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0])
 
         # TODO: this will double print trees
-        for pkg in sorted_list:
+        for (pkg, _) in sorted_list:
             _cls._print_tree(pkg, dependency_tree)
 
     @classmethod
