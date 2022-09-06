@@ -69,11 +69,7 @@ def invert_tree(
 ) -> typing.Dict[str, typing.List[str]]:
     inverted_tree: typing.Dict[str, typing.List[str]] = {}
     for pkg, deps in dependency_tree.items():
-        if not deps:
-            # When a package has no dependencies, and is
-            # not depended upon by anything but the source
-            # it would not be tracked. Here we make sure it is.
-            inverted_tree.setdefault(pkg, [])
+        inverted_tree.setdefault(pkg, [])
         for dep in deps:
             required_by = inverted_tree.setdefault(dep, [])
             required_by.append(pkg)
