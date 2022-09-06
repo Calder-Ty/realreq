@@ -23,7 +23,7 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Topic :: Software Development :: Build Tools",
     ],
-    packages=["_realreq"],
+    packages=["_realreq", "_realreq.requtils"],
     package_data={"_realreq": ["*.json"]},
     python_requires=">=3.6",
     entry_points={"console_scripts": ["realreq=_realreq.realreq:main"]},
