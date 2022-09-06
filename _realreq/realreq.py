@@ -69,14 +69,24 @@ class RealReq:
             type=pathlib.Path,
             help="Path to text file containing aliases in <import name>=<install name> format",
         )
+        self.parser.add_argument(
+            "-i",
+            "--invert",
+            action="store_true",
+            help="Display dependencies in inverted tree format",
+        )
+
         self._args = self.parser.parse_args()
 
     def __call__(self):
         pkgs = search_source(self._args.source, aliases=self._read_aliases())
 
-        if self._args.deep:
+        if self._args.deep or self._args.invert:
             tree = requtils.build_dep_tree(pkgs)
-            display.FreezeDisplay.display(tree)
+            if self._args.invert:
+                display.TreeDisplay.display(requtils.invert_tree(tree))
+            else:
+                display.FreezeDisplay.display(tree)
 
         # TODO: Shallow search doesn't generate a tree, but a list so for now
         # We handle seperately, lets unify the handling
