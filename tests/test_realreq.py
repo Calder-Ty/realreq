@@ -44,6 +44,7 @@ _MOCK_DEPENDENCY_TREE = {
 }
 
 _MOCK_DEPENDENCY_TREE_INVERTED = {
+    "foo": [],
     "bar": ["foo"],
     "baz": ["requests"],
     "spam": ["requests"],
@@ -52,11 +53,34 @@ _MOCK_DEPENDENCY_TREE_INVERTED = {
     "pip": ["egg"],
     "abbreviation": [],
     "fake-pkg": [],
+    "requests": [],
 }
 
+_MOCK_DEPENDENCY_TREE_OUTPUT = """- abbreviation
+- bar
+  |- foo
+- baz
+  |- requests
+- egg
+  |- spam
+    |- requests
+- fake-pkg
+- foo
+- pip
+  |- egg
+    |- spam
+      |- requests
+- requests
+- spam
+  |- requests
+- wheel
+  |- spam
+    |- requests
+"""
 
 _MOCK_DEP_VERSIONS = {
     "foo": "1.0.0",
+    "bar": "git-repo @ git+https://github.com/example/user/bar.git@1.2.3",
     "baz": "0.1.0",
     "spam": "3.2.12",
     "egg": "13.0",
@@ -332,3 +356,19 @@ class TestCLI:
             app()
         sbuff.seek(0)
         assert "fake-pkg==0.0.1" in sbuff.read()
+
+    @pytest.mark.parametrize("s_flag", ["-s", "--source"])
+    @pytest.mark.parametrize("a_flag", ["-a", "--alias"])
+    @pytest.mark.parametrize("i_flag", ["-i", "--invert"])
+    def test_cli_invert_tree(self, source_files, mocker, s_flag, a_flag, i_flag):
+        args = ["cmd", s_flag, str(source_files), i_flag, a_flag, "fake_pkg=fake-pkg"]
+        mocker.patch.object(sys, "argv", args)
+        mock_run = mocker.patch("subprocess.run")
+        mock_run.side_effect = mock_subprocess_run
+
+        sbuff = io.StringIO()
+        with contextlib.redirect_stdout(sbuff):
+            app = realreq.RealReq()
+            app()
+        sbuff.seek(0)
+        assert sbuff.read() == _MOCK_DEPENDENCY_TREE_OUTPUT
