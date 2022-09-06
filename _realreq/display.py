@@ -4,7 +4,7 @@
 # We must just Support a simple protocol for display.
 # def display(dependency_tree: Mapping[str, List[str]])
 import typing
-from . import requtils
+import _realreq.requtils as requtils
 
 
 class FreezeDisplay:
@@ -20,6 +20,7 @@ class FreezeDisplay:
 
 class TreeDisplay:
     """This displays Dependencies as a tree"""
+
     _INDENT_LEVEL = 0
 
     @classmethod

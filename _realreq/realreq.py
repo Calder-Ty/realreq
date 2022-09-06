@@ -12,7 +12,9 @@ import argparse
 import json
 import pathlib
 import typing
-from . import requtils, display
+
+import _realreq.requtils as requtils
+import _realreq.display as display
 
 
 HERE_PATH = pathlib.Path(__file__).resolve().parent.absolute()
@@ -35,7 +37,7 @@ def main():
 class RealReq:
     """Main Application
 
-    This will be a CLI tool used to gather information about the requirements
+    This wll be a CLI tool used to gather information about the requirements
     actually used in your source code
     """
 
