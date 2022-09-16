@@ -1,5 +1,5 @@
 test:
-	pytest
+	PYTHONPATH=. pytest
 
 clean:
 	rm dist/* || true
