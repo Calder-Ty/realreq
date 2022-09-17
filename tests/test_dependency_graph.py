@@ -7,8 +7,3 @@ class TestDependencyGraph:
         g = graph.DependencyGraph()
         g.add_dependency("foo", "bar")
         assert g.get_dependencies("bar") == {"foo"}
-
-    def test_add_node(self):
-        g = graph.DependencyGraph()
-        g.add_node("foo")
-        assert set() == g.get_dependencies("foo")
