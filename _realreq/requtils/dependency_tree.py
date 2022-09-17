@@ -22,9 +22,13 @@ class DependencyGraph:
     def __init__(self):
         self._dependencies: typing.dict[str, _Dependency] = {}
 
-    def add_node(self, name: str):
-        """Add a Node to the dependency Graph"""
-        self._dependencies[name] = _Dependency(name)
+    def __iter__(self):
+        for k in self._dependencies.keys():
+            yield (k, self.get_dependencies(k))
+
+    def nodes(self):
+        """Return name of all nodes in the graph"""
+        return list(self._dependencies.keys())
 
     def add_dependency(self, name: str, dependant: str):
         """Add the name as a dependency of the given dependant"""
