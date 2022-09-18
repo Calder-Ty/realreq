@@ -84,7 +84,7 @@ class RealReq:
         if self._args.deep or self._args.invert:
             tree = requtils.build_dep_tree(pkgs)
             if self._args.invert:
-                display.TreeDisplay.display(requtils.invert_tree(tree))
+                display.TreeDisplay.display(tree.invert())
             else:
                 display.FreezeDisplay.display(tree)
 
