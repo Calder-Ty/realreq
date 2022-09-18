@@ -11,8 +11,8 @@ class FreezeDisplay:
     """Freeze Display just writes out the dependencies in same format at pip freeze"""
 
     @classmethod
-    def display(_cls, dependency_tree: typing.Mapping[str, typing.Sequence[str]]):
-        pkgs = dependency_tree.keys()
+    def display(_cls, dependency_tree: requtils.dependency_tree.DependencyGraph):
+        pkgs = dependency_tree.nodes()
         dep_ver = requtils.get_dependency_versions(pkgs)
         sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0])
         print("\n".join(["{0}".format(v) for _, v in sorted_list]))
@@ -24,8 +24,8 @@ class TreeDisplay:
     _INDENT_LEVEL = 0
 
     @classmethod
-    def display(_cls, dependency_tree: typing.Mapping[str, typing.Sequence[str]]):
-        pkgs = dependency_tree.keys()
+    def display(_cls, dependency_tree: requtils.dependency_tree.DependencyGraph):
+        pkgs = dependency_tree.nodes()
         dep_ver = requtils.get_dependency_versions(pkgs)
         sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0])
 
@@ -34,13 +34,13 @@ class TreeDisplay:
             _cls._print_tree(pkg, dependency_tree)
 
     @classmethod
-    def _print_tree(_cls, name, tree):
+    def _print_tree(_cls, name, tree: requtils.dependency_tree.DependencyGraph):
         if not _cls._INDENT_LEVEL:
             print(f"- {name}")
         else:
             # Print pkg with indent, and tree marker
             print(f"{'  '*_cls._INDENT_LEVEL}|- {name}")
-        children = tree[name]
+        children = tree.get_dependencies(name)
         if children:
             _cls._INDENT_LEVEL += 1
             for child in children:

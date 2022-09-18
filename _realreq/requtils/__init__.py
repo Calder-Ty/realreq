@@ -2,6 +2,7 @@
 import re
 import subprocess
 import typing
+from . import dependency_tree as dep_graph
 
 
 IMPORT_RE = re.compile(
@@ -31,14 +32,14 @@ def scan_for_imports(line):
 
 def build_dep_list(pkgs):
     """Builds list of dependencies"""
-    return list(build_dep_tree(pkgs).keys())
+    return build_dep_tree(pkgs).nodes()
 
 
-def build_dep_tree(pkgs: typing.List[str]) -> typing.Dict[str, typing.List[str]]:
+def build_dep_tree(pkgs: typing.List[str]) -> dep_graph.DependencyGraph:
     pkgs_ = set(pkgs)
-    dependencies = {}
-
+    dependencies = dep_graph.DependencyGraph()
     while pkgs_:
+
         try:
             results = subprocess.run(
                 [
@@ -56,24 +57,14 @@ def build_dep_tree(pkgs: typing.List[str]) -> typing.Dict[str, typing.List[str]]
         found_deps = set()
         for out in results.stdout.decode().split(PIP_SHOW_SEP):
             p = get_deps_from_output(out)
-            dependencies[p.name] = p.deps
+            dependencies.add_node(p.name)
+            for dep in p.deps:
+                dependencies.add_dependency(dep, p.name)
             found_deps |= set(p.deps)
 
         # Clean up pkgs_ to only be new dependencies that need to be searched
         pkgs_ = found_deps - pkgs_
     return dependencies
-
-
-def invert_tree(
-    dependency_tree: typing.Dict[str, typing.List[str]]
-) -> typing.Dict[str, typing.List[str]]:
-    inverted_tree: typing.Dict[str, typing.List[str]] = {}
-    for pkg, deps in dependency_tree.items():
-        inverted_tree.setdefault(pkg, [])
-        for dep in deps:
-            required_by = inverted_tree.setdefault(dep, [])
-            required_by.append(pkg)
-    return inverted_tree
 
 
 def get_deps_from_output(out: str) -> ParsedShowOutput:
