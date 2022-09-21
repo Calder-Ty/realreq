@@ -77,5 +77,35 @@ EOF
 realreq -d -s ./path/to/mypackage --alias-file realreq-aliases.txt > requirements.txt
 ```
 
+## Additional tools
 
+### Inverted Tree
 
+Sometimes you may want to explore the reasons for certain dependencies. Realreq lets you see an
+inverted tree view that displays all your dependencies and what libraries they are used by. For
+example the inverted tree for realreq's test suite looks like this:
+
+```
+- attrs
+  |- pytest
+    |- pytest-mock
+- iniconfig
+  |- pytest
+    |- pytest-mock
+- pluggy
+  |- pytest
+    |- pytest-mock
+- py
+  |- pytest
+    |- pytest-mock
+- pyparsing
+  |- packaging
+    |- pytest
+      |- pytest-mock
+- tomli
+  |- pytest
+    |- pytest-mock
+```
+
+Currently realreq does not support a regular tree view, though that feature is one that I want to
+implement in the future.
