@@ -35,6 +35,9 @@ class TreeDisplay:
 
     @classmethod
     def _print_tree(_cls, name, tree: requtils.dependency_tree.DependencyGraph):
+        if not _cls._INDENT_LEVEL and tree.get_dependants(name):
+            # This package is not a root to the graph
+            return
         if not _cls._INDENT_LEVEL:
             print(f"- {name}")
         else:

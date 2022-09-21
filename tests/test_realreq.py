@@ -61,18 +61,11 @@ _MOCK_DEPENDENCY_TREE_OUTPUT = """- abbreviation
   |- foo
 - baz
   |- requests
-- egg
-  |- spam
-    |- requests
 - fake-pkg
-- foo
 - pip
   |- egg
     |- spam
       |- requests
-- requests
-- spam
-  |- requests
 - wheel
   |- spam
     |- requests

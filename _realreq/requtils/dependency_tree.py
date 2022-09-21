@@ -53,10 +53,16 @@ class DependencyGraph:
 
     def get_dependencies(self, name) -> typing.Collection[str]:
         """Get a list of dependencies"""
-        deps = self._get_node(name).dependencies
+        deps = self._get_node(name)
         if deps is None:
             KeyError(f"Node {name} does not exist in the graph")
-        return deps
+        return deps.dependencies
+
+    def get_dependants(self, name) -> typing.Collection[str]:
+        deps = self._get_node(name)
+        if deps is None:
+            KeyError(f"Node {name} does not exist in the graph")
+        return deps.dependants
 
     def _get_node(self, name) -> _Dependency:
         dep = self._nodes.get(name)
