@@ -2,6 +2,11 @@
 
 ## [unreleased]
 
+## 0.7.0
+### Added
+- new `-i/--invert` flag will print out your dependencies in an inverted tree format
+
+
 ## 0.6.0
 ### Added
 - Added help messages for CLI
