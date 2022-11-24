@@ -4,7 +4,6 @@ import contextlib
 import io
 import unittest.mock
 import os
-import subprocess
 import sys
 
 import pytest
