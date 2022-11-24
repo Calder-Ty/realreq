@@ -120,7 +120,11 @@ def split_aliases(aliases: typing.List[str]) -> typing.Dict[str, str]:
 
 def search_source(source, aliases=ALIASES):
     """Go through the source directory and identify all modules"""
-    source_files = list(pathlib.Path(source).rglob("*.[Pp][Yy]"))
+    source = pathlib.Path(source)
+    if source.is_file() and source.suffix.lower() == ".py":
+        source_files = [source]
+    else:
+        source_files = list(source.rglob("*.[Pp][Yy]"))
 
     imports = []
     for file_ in source_files:
@@ -144,7 +148,7 @@ def search_source(source, aliases=ALIASES):
     imports = [m for m in imports if m not in STD_LIBS]
     imports = set(imports)
 
-    source_module = pathlib.Path(source).stem
+    source_module = source.stem
     imports.discard(source_module)
     for import_name, install_name in aliases.items():
         if import_name in imports:
