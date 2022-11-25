@@ -147,8 +147,10 @@ def mock_subprocess_run(*args, **kwargs):
         return mock_pip_freeze(*args, **kwargs)
 
 
+# NOTE: I originally had "path/to/main" as a new param, but it caused an error (I
+# think) when trying to overwrite "path/to" that was created from the "path/to/src" param
 @pytest.fixture(
-    scope="session", params=["src", "path/to/src", "main.py", "path/to/main.py"]
+    scope="session", params=["src", "path/to/src", "go/to/module.py", "module.py"]
 )
 def source_files(
     tmp_path_factory,
@@ -158,29 +160,31 @@ def source_files(
 
     returns: path to directory being used for test
     """
-    print()
-    print(tmp_path_factory, request)
     path = os.path.normpath(request.param)
-    print("path", path)
     paths = path.split("/")
-    print("paths", paths)
-    if ".py" in path:
-        print("new", request.param)
-        main = tmp_path_factory.mktemp(path, numbered=False)
-        main.write_text(CONTENT)
-
-    elif len(paths) > 1 and isinstance(paths, list):
+    is_module = os.path.splitext(paths[-1])[1].lower() == ".py"
+    if is_module:
+        module = paths[-1]
+        paths = paths[:-1]
+    if len(paths) > 1 and isinstance(paths, list):
+        # what is the significance of path[0] here, is that just a hack to have src initialized with something?
         src = tmp_path_factory.mktemp(path[0], numbered=False)
         for p in paths:
             src = src / p
-            print(src)
             src.mkdir()
+    elif is_module:
+        # NOTE: here I used the same path[0] hack as above for now
+        src = tmp_path_factory.mktemp(path[0], numbered=False)
     else:
         src = tmp_path_factory.mktemp(path, numbered=False)
-    main = src / "main.py"
-    print("main", main)
-    main.write_text(CONTENT)
-    print()
+
+    if is_module:
+        module = src / module
+        module.write_text(CONTENT)
+        return module
+    else:
+        main = src / "main.py"
+        main.write_text(CONTENT)
     return src
 
 
