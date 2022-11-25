@@ -147,8 +147,6 @@ def mock_subprocess_run(*args, **kwargs):
         return mock_pip_freeze(*args, **kwargs)
 
 
-# NOTE: I originally had "path/to/main" as a new param, but it caused an error (I
-# think) when trying to overwrite "path/to" that was created from the "path/to/src" param
 @pytest.fixture(scope="session", params=["src", "path/to/src", "go/to/src/module.py"])
 def source_files(
     tmp_path_factory,
@@ -165,13 +163,11 @@ def source_files(
         module = paths[-1]
         paths = paths[:-1]
     if len(paths) > 1 and isinstance(paths, list):
-        # what is the significance of path[0] here, is that just a hack to have src initialized with something?
         src = tmp_path_factory.mktemp(path[0], numbered=False)
         for p in paths:
             src = src / p
             src.mkdir()
     elif is_module:
-        # NOTE: here I used the same path[0] hack as above for now
         src = tmp_path_factory.mktemp(path[0], numbered=False)
     else:
         src = tmp_path_factory.mktemp(path, numbered=False)
