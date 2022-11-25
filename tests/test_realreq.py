@@ -149,9 +149,7 @@ def mock_subprocess_run(*args, **kwargs):
 
 # NOTE: I originally had "path/to/main" as a new param, but it caused an error (I
 # think) when trying to overwrite "path/to" that was created from the "path/to/src" param
-@pytest.fixture(
-    scope="session", params=["src", "path/to/src", "go/to/module.py", "module.py"]
-)
+@pytest.fixture(scope="session", params=["src", "path/to/src", "go/to/src/module.py"])
 def source_files(
     tmp_path_factory,
     request,
