@@ -177,9 +177,8 @@ def source_files(
         src = tmp_path_factory.mktemp(path, numbered=False)
 
     if is_module:
-        module = src / module
-        module.write_text(CONTENT)
-        return module
+        src = src / module
+        src.write_text(CONTENT)
     else:
         main = src / "main.py"
         main.write_text(CONTENT)
