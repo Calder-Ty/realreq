@@ -149,10 +149,7 @@ def search_source(source, aliases=ALIASES):
     imports = [m for m in imports if m not in STD_LIBS]
     imports = set(imports)
 
-    # TODO: this is where the fix needs to be added for modules vs directories
-    if is_module:
-        pass
-    source_module = source.stem
+    source_module = source.resolve().parent.stem if is_module else source.stem
     imports.discard(source_module)
     for import_name, install_name in aliases.items():
         if import_name in imports:
