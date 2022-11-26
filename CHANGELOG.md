@@ -2,6 +2,10 @@
 
 ## [unreleased]
 
+## 0.7.1
+### Fixes/Improvements
+- realreq now works when the sourcefile is a python module (single python file)
+
 ## 0.7.0
 ### Added
 - new `-i/--invert` flag will print out your dependencies in an inverted tree format
