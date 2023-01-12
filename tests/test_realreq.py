@@ -162,19 +162,19 @@ def source_files(
     Returns: path to directory being used for test
     """
     path = pathlib.Path(request.param)
-    paths = path.parents
+    parents = path.parents
     is_module = path.suffix.lower() == ".py"
 
     # Get the appropriate paths
     if not is_module:
         # Hack to get all parts of the path
-        paths = (path / "child").parents
+        parents = (path / "child").parents
 
     # Build out source directory
-    if len(paths) > 1 and not isinstance(paths, str):
+    if len(parents) > 1 and not isinstance(parents, str):
         # Minus 2 because of the implicit "." dir at the top of the parents list
-        src = tmp_path_factory.mktemp(paths[len(paths)-2] , numbered=False)
-        for p in list(reversed(paths))[2:]:
+        src = tmp_path_factory.mktemp(parents[len(parents)-2] , numbered=False)
+        for p in list(reversed(parents))[2:]:
             src = src / p.stem
             src.mkdir()
     else:
