@@ -41,25 +41,9 @@ def build_dep_tree(pkgs: typing.List[str]) -> dep_graph.DependencyGraph:
     dependencies = dep_graph.DependencyGraph()
     while pkgs_:
 
-        try:
-            results = subprocess.run(
-                [
-                    "pip",
-                    "show",
-                ]
-                + list(pkgs_),
-                capture_output=True,
-                check=True,
-            )
-        except subprocess.CalledProcessError as err:
-            err_message = err.stderr.decode()
-            if err_message.startswith("WARNING: Package(s) not found: "):
-                not_found = err_message.lstrip("WARNING: Package(s) not found: ").strip().split(", ")
-                pkgs_ = pkgs_ - set(not_found)
-                continue
-            else:
-                raise err
-
+        results = pip_show(pkgs_)
+        if results is None:
+            continue
 
         found_deps = set()
         for out in results.stdout.decode().split(PIP_SHOW_SEP):
@@ -72,6 +56,31 @@ def build_dep_tree(pkgs: typing.List[str]) -> dep_graph.DependencyGraph:
         # Clean up pkgs_ to only be new dependencies that need to be searched
         pkgs_ = found_deps - pkgs_
     return dependencies
+
+
+def pip_show(pkgs_: typing.Set[str]) -> typing.Optional[subprocess.CompletedProcess]:
+    try:
+        return subprocess.run(
+            [
+                "pip",
+                "show",
+            ]
+            + list(pkgs_),
+            capture_output=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as err:
+        err_message = err.stderr.decode()
+        if err_message.startswith("WARNING: Package(s) not found: "):
+            not_found = (
+                err_message.lstrip("WARNING: Package(s) not found: ")
+                .strip()
+                .split(", ")
+            )
+            pkgs_ = pkgs_ - set(not_found)
+            return None
+        else:
+            raise err
 
 
 def get_deps_from_output(out: str) -> ParsedShowOutput:
