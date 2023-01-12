@@ -161,26 +161,28 @@ def source_files(
 
     Returns: path to directory being used for test
     """
-    path = os.path.normpath(request.param)
-    paths = path.split("/")
-    is_module = os.path.splitext(paths[-1])[1].lower() == ".py"
+    path = pathlib.Path(request.param)
+    paths = path.parents
+    is_module = path.suffix.lower() == ".py"
 
-    # Determine if it is a module
-    if is_module:
-        module = paths[-1]
-        paths = paths[:-1]
+    # Get the appropriate paths
+    if not is_module:
+        # Hack to get all parts of the path
+        paths = (path / "child").parents
 
     # Build out source directory
-    if len(paths) > 1 and isinstance(paths, list):
-        src = tmp_path_factory.mktemp(paths.pop(0), numbered=False)
-        for p in paths:
-            src = src / p
+    if len(paths) > 1 and not isinstance(paths, str):
+        # Minus 2 because of the implicit "." dir at the top of the parents list
+        src = tmp_path_factory.mktemp(paths[len(paths)-2] , numbered=False)
+        for p in list(reversed(paths))[2:]:
+            src = src / p.stem
             src.mkdir()
     else:
         src = tmp_path_factory.mktemp(path, numbered=False)
 
     # Write out source file
     if is_module:
+        module = path.name
         src = src / module
         src.write_text(CONTENT)
     else:
