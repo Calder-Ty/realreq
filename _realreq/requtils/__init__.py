@@ -70,12 +70,15 @@ def pip_show(pkgs_: typing.Set[str]) -> typing.Optional[subprocess.CompletedProc
             check=True,
         )
     except subprocess.CalledProcessError as err:
-        err_message = err.stderr.decode()
-        if err_message.startswith("WARNING: Package(s) not found: "):
-            sys.stderr.write(err_message)
-            return None
-        else:
-            raise err
+        return handle_pip_show_error(err)
+
+def handle_pip_show_error(err: subprocess.CalledProcessError):
+    err_message = err.stderr.decode()
+    if err_message.startswith("WARNING: Package(s) not found: "):
+        sys.stderr.write(err_message)
+        return None
+    else:
+        raise err
 
 
 def get_deps_from_output(out: str) -> ParsedShowOutput:
