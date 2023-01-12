@@ -162,22 +162,7 @@ def source_files(
     Returns: path to directory being used for test
     """
     path = pathlib.Path(request.param)
-
-    parents = path.parents
-    # Get the appropriate paths
-    if not _is_module(path):
-        # Hack to get all parts of the path
-        parents = (path / "child").parents
-
-    # Build out source directory
-    if len(parents) > 1 and not isinstance(parents, str):
-        # Minus 2 because of the implicit "." dir at the top of the parents list
-        src = tmp_path_factory.mktemp(parents[len(parents)-2] , numbered=False)
-        for p in list(reversed(parents))[2:]:
-            src = src / p.stem
-            src.mkdir()
-    else:
-        src = tmp_path_factory.mktemp(path, numbered=False)
+    src = _create_source_directory(tmp_path_factory, path)
 
     # Write out source file
     if _is_module(path):
@@ -194,6 +179,20 @@ def _is_module(path:pathlib.Path) -> bool:
     """Tests if path is a Python Module"""
     return path.suffix.lower() == ".py"
 
+def _create_source_directory(tmp_path_factory, path: pathlib.Path) -> pathlib.Path:
+    parents = path.parents
+    if not _is_module(path):
+        # Hack to get all parts of the path
+        parents = (path / "child").parents
+    if len(parents) > 1 and not isinstance(parents, str):
+        # Minus 2 because of the implicit "." dir at the top of the parents list
+        src = tmp_path_factory.mktemp(parents[len(parents)-2] , numbered=False)
+        for p in list(reversed(parents))[2:]:
+            src = src / p.stem
+            src.mkdir()
+    else:
+        src = tmp_path_factory.mktemp(path, numbered=False)
+    return src
 
 def test_search_source_for_used_packages(source_files):
     """Source code is searched and aquires the name of all packages used"""
