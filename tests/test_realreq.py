@@ -162,11 +162,10 @@ def source_files(
     Returns: path to directory being used for test
     """
     path = pathlib.Path(request.param)
-    parents = path.parents
-    is_module = path.suffix.lower() == ".py"
 
+    parents = path.parents
     # Get the appropriate paths
-    if not is_module:
+    if not _is_module(path):
         # Hack to get all parts of the path
         parents = (path / "child").parents
 
@@ -181,7 +180,7 @@ def source_files(
         src = tmp_path_factory.mktemp(path, numbered=False)
 
     # Write out source file
-    if is_module:
+    if _is_module(path):
         module = path.name
         src = src / module
         src.write_text(CONTENT)
@@ -189,6 +188,11 @@ def source_files(
         main = src / "main.py"
         main.write_text(CONTENT)
     return src
+
+
+def _is_module(path:pathlib.Path) -> bool:
+    """Tests if path is a Python Module"""
+    return path.suffix.lower() == ".py"
 
 
 def test_search_source_for_used_packages(source_files):
