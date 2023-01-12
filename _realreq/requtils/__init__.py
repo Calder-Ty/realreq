@@ -43,7 +43,7 @@ def build_dep_tree(pkgs: typing.List[str]) -> dep_graph.DependencyGraph:
 
         results = pip_show(pkgs_)
         if results is None:
-            continue
+            break
 
         found_deps = set()
         for out in results.stdout.decode().split(PIP_SHOW_SEP):
@@ -72,12 +72,7 @@ def pip_show(pkgs_: typing.Set[str]) -> typing.Optional[subprocess.CompletedProc
     except subprocess.CalledProcessError as err:
         err_message = err.stderr.decode()
         if err_message.startswith("WARNING: Package(s) not found: "):
-            not_found = (
-                err_message.lstrip("WARNING: Package(s) not found: ")
-                .strip()
-                .split(", ")
-            )
-            pkgs_ = pkgs_ - set(not_found)
+            sys.stderr.write(err_message)
             return None
         else:
             raise err
