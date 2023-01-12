@@ -1,6 +1,6 @@
 # realreq: real requirements for real projects
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Calder-Ty/realreq/Tests) ![PyPI - Downloads](https://img.shields.io/pypi/dm/realreq?style=plastic) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/calder-ty/realreq?style=plastic)[![PyPI pyversions](https://img.shields.io/pypi/pyversions/realreq.svg)](https://pypi.python.org/pypi/realreq/)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Calder-Ty/realreq/test.yml?branch=master) ![PyPI - Downloads](https://img.shields.io/pypi/dm/realreq?style=plastic) ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/calder-ty/realreq?style=plastic)[![PyPI pyversions](https://img.shields.io/pypi/pyversions/realreq.svg)](https://pypi.python.org/pypi/realreq/)
 
 `realreq` is _the_ lightweight tool that provides you with the actual
 dependencies used by your project.

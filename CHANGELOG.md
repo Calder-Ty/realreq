@@ -1,6 +1,7 @@
 # Changelog
 
 ## [unreleased]
+- fixed bug where infinite loop could be created
 
 ## 0.7.1
 ### Fixes/Improvements
