@@ -263,11 +263,15 @@ class TestCLI:
         app = realreq.RealReq()
         app()
 
-    def execute_with_args(self, args)->str:
-        """Executes realreq with the given args, returning the output of the execution"""
-        sbuff = io.StringIO()
+    def execute_with_args(self, args: typing.List[str])->str:
+        """
+        Executes realreq with the given args returning
 
-        with CLIMocker(args), contextlib.redirect_stdout(sbuff):
+        Args:
+            args: List of the arguments that would be passed via the CLI
+
+        Returns: the output of the execution
+        """
         output_buff = io.StringIO()
 
         with CLIMocker(args), contextlib.redirect_stdout(output_buff):
