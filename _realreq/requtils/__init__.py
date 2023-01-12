@@ -1,5 +1,6 @@
 """Real Req Utilities"""
 import re
+import sys
 import subprocess
 import typing
 from . import dependency_tree as dep_graph
@@ -47,12 +48,18 @@ def build_dep_tree(pkgs: typing.List[str]) -> dep_graph.DependencyGraph:
                     "show",
                 ]
                 + list(pkgs_),
-                stdout=subprocess.PIPE,
+                capture_output=True,
                 check=True,
             )
-        except subprocess.CalledProcessError:
-            # FIXME: No Error message or tracking happening
-            continue
+        except subprocess.CalledProcessError as err:
+            err_message = err.stderr.decode()
+            if err_message.startswith("WARNING: Package(s) not found: "):
+                not_found = err_message.lstrip("WARNING: Package(s) not found: ").strip().split(", ")
+                pkgs_ = pkgs_ - set(not_found)
+                continue
+            else:
+                raise err
+
 
         found_deps = set()
         for out in results.stdout.decode().split(PIP_SHOW_SEP):
