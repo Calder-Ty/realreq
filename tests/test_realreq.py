@@ -259,17 +259,25 @@ class CLIMocker:
 class TestCLI:
     """Tests for the CLI of realreq"""
 
+    def run_realreq(self):
+        app = realreq.RealReq()
+        app()
+
+    def execute_with_args(self, args)->str:
+        """Executes realreq with the given args, returning the output of the execution"""
+        sbuff = io.StringIO()
+
+        with CLIMocker(args), contextlib.redirect_stdout(sbuff):
+            self.run_realreq()
+        sbuff.seek(0)
+        return sbuff.read()
+
 
     @pytest.mark.parametrize("s_flag", ["-s", "--source"])
     def test_default_flags(self, source_files, mocker, s_flag):
         args = ["cmd", s_flag, str(source_files)]
-        sbuff = io.StringIO()
-
-        with CLIMocker(args), contextlib.redirect_stdout(sbuff):
-            app = realreq.RealReq()
-            app()
-        sbuff.seek(0)
-        assert sbuff.read() == "".join(
+        actual = self.execute_with_args(args)
+        assert actual == "".join(
             "{0}=={1}\n".format(k, v) for k, v in _SHALLOW_DEPENDENCIES.items()
         )
 
@@ -277,13 +285,8 @@ class TestCLI:
     @pytest.mark.parametrize("d_flag", ["-d", "--deep"])
     def test_deep_flag(self, source_files, mocker, s_flag, d_flag):
         args = ["cmd", s_flag, str(source_files), d_flag]
-
-        sbuff = io.StringIO()
-        with CLIMocker(args), contextlib.redirect_stdout(sbuff):
-            app = realreq.RealReq()
-            app()
-        sbuff.seek(0)
-        assert sbuff.read() == "".join(
+        actual = self.execute_with_args(args)
+        assert actual == "".join(
             "{0}=={1}\n".format(k, v) for k, v in _DEEP_DEPENDENCIES.items()
         )
 
@@ -298,14 +301,9 @@ class TestCLI:
     ):
         """Makes Sure Aliases are used"""
         args = ["cmd", s_flag, str(source_files), a_flag, "fake_pkg=fake-pkg"]
+        actual = self.execute_with_args(args)
 
-
-        sbuff = io.StringIO()
-        with CLIMocker(args), contextlib.redirect_stdout(sbuff):
-            app = realreq.RealReq()
-            app()
-        sbuff.seek(0)
-        assert "fake-pkg==0.0.1" in sbuff.read()
+        assert "fake-pkg==0.0.1" in actual
 
     @pytest.mark.parametrize("s_flag", ["-s", "--source"])
     def test_file_aliases(
@@ -319,13 +317,8 @@ class TestCLI:
         f = tmp_path / "alias_file.txt"
         f.write_bytes(b"fake_pkg=fake-pkg")
         args = ["cmd", s_flag, str(source_files), "--alias-file", str(f.absolute())]
-
-        sbuff = io.StringIO()
-        with CLIMocker(args), contextlib.redirect_stdout(sbuff):
-            app = realreq.RealReq()
-            app()
-        sbuff.seek(0)
-        assert "fake-pkg==0.0.1" in sbuff.read()
+        actual = self.execute_with_args(args)
+        assert "fake-pkg==0.0.1" in actual
 
     @pytest.mark.parametrize("s_flag", ["-s", "--source"])
     @pytest.mark.parametrize("a_flag", ["-a", "--alias"])
@@ -350,23 +343,13 @@ class TestCLI:
             a_flag,
             "fake_pkg=fake-pkg",
         ]
-
-        sbuff = io.StringIO()
-        with CLIMocker(args), contextlib.redirect_stdout(sbuff):
-            app = realreq.RealReq()
-            app()
-        sbuff.seek(0)
-        assert "fake-pkg==0.0.1" in sbuff.read()
+        actual = self.execute_with_args(args)
+        assert "fake-pkg==0.0.1" in actual
 
     @pytest.mark.parametrize("s_flag", ["-s", "--source"])
     @pytest.mark.parametrize("a_flag", ["-a", "--alias"])
     @pytest.mark.parametrize("i_flag", ["-i", "--invert"])
     def test_cli_invert_tree(self, source_files, mocker, s_flag, a_flag, i_flag):
         args = ["cmd", s_flag, str(source_files), i_flag, a_flag, "fake_pkg=fake-pkg"]
-
-        sbuff = io.StringIO()
-        with CLIMocker(args), contextlib.redirect_stdout(sbuff):
-            app = realreq.RealReq()
-            app()
-        sbuff.seek(0)
-        assert sbuff.read() == _MOCK_DEPENDENCY_TREE_OUTPUT
+        actual = self.execute_with_args(args)
+        assert actual == _MOCK_DEPENDENCY_TREE_OUTPUT
