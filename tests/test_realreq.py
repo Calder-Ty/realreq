@@ -5,6 +5,7 @@ import io
 import unittest.mock
 import os
 import sys
+import typing
 
 import pytest
 from pytest_mock import mocker
@@ -235,18 +236,36 @@ def test_parse_versions():
     } == requtils.parse_versions(out_)
 
 
+class CLIMocker:
+
+    def __init__(self, cli_args):
+        self._cli_args = cli_args
+
+
+    def __enter__(self):
+        self._orig_argv = sys.argv
+        patched_argv = unittest.mock.patch.object(sys, "argv", self._cli_args)
+        self._patched_argv = patched_argv.start()
+        self._mock_run = unittest.mock.patch("subprocess.run").start()
+        self._mock_run.side_effect = mock_subprocess_run
+
+
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        sys.argv = self._orig_argv
+        self._mock_run.stop()
+
+
 class TestCLI:
     """Tests for the CLI of realreq"""
+
 
     @pytest.mark.parametrize("s_flag", ["-s", "--source"])
     def test_default_flags(self, source_files, mocker, s_flag):
         args = ["cmd", s_flag, str(source_files)]
-        mocker.patch.object(sys, "argv", args)
-        mock_run = mocker.patch("subprocess.run")
-        mock_run.side_effect = mock_subprocess_run
-
         sbuff = io.StringIO()
-        with contextlib.redirect_stdout(sbuff):
+
+        with CLIMocker(args), contextlib.redirect_stdout(sbuff):
             app = realreq.RealReq()
             app()
         sbuff.seek(0)
@@ -258,12 +277,9 @@ class TestCLI:
     @pytest.mark.parametrize("d_flag", ["-d", "--deep"])
     def test_deep_flag(self, source_files, mocker, s_flag, d_flag):
         args = ["cmd", s_flag, str(source_files), d_flag]
-        mocker.patch.object(sys, "argv", args)
-        mock_run = mocker.patch("subprocess.run")
-        mock_run.side_effect = mock_subprocess_run
 
         sbuff = io.StringIO()
-        with contextlib.redirect_stdout(sbuff):
+        with CLIMocker(args), contextlib.redirect_stdout(sbuff):
             app = realreq.RealReq()
             app()
         sbuff.seek(0)
@@ -282,12 +298,10 @@ class TestCLI:
     ):
         """Makes Sure Aliases are used"""
         args = ["cmd", s_flag, str(source_files), a_flag, "fake_pkg=fake-pkg"]
-        mocker.patch.object(sys, "argv", args)
-        mock_run = mocker.patch("subprocess.run")
-        mock_run.side_effect = mock_subprocess_run
+
 
         sbuff = io.StringIO()
-        with contextlib.redirect_stdout(sbuff):
+        with CLIMocker(args), contextlib.redirect_stdout(sbuff):
             app = realreq.RealReq()
             app()
         sbuff.seek(0)
@@ -305,12 +319,9 @@ class TestCLI:
         f = tmp_path / "alias_file.txt"
         f.write_bytes(b"fake_pkg=fake-pkg")
         args = ["cmd", s_flag, str(source_files), "--alias-file", str(f.absolute())]
-        mocker.patch.object(sys, "argv", args)
-        mock_run = mocker.patch("subprocess.run")
-        mock_run.side_effect = mock_subprocess_run
 
         sbuff = io.StringIO()
-        with contextlib.redirect_stdout(sbuff):
+        with CLIMocker(args), contextlib.redirect_stdout(sbuff):
             app = realreq.RealReq()
             app()
         sbuff.seek(0)
@@ -339,12 +350,9 @@ class TestCLI:
             a_flag,
             "fake_pkg=fake-pkg",
         ]
-        mocker.patch.object(sys, "argv", args)
-        mock_run = mocker.patch("subprocess.run")
-        mock_run.side_effect = mock_subprocess_run
 
         sbuff = io.StringIO()
-        with contextlib.redirect_stdout(sbuff):
+        with CLIMocker(args), contextlib.redirect_stdout(sbuff):
             app = realreq.RealReq()
             app()
         sbuff.seek(0)
@@ -355,12 +363,9 @@ class TestCLI:
     @pytest.mark.parametrize("i_flag", ["-i", "--invert"])
     def test_cli_invert_tree(self, source_files, mocker, s_flag, a_flag, i_flag):
         args = ["cmd", s_flag, str(source_files), i_flag, a_flag, "fake_pkg=fake-pkg"]
-        mocker.patch.object(sys, "argv", args)
-        mock_run = mocker.patch("subprocess.run")
-        mock_run.side_effect = mock_subprocess_run
 
         sbuff = io.StringIO()
-        with contextlib.redirect_stdout(sbuff):
+        with CLIMocker(args), contextlib.redirect_stdout(sbuff):
             app = realreq.RealReq()
             app()
         sbuff.seek(0)
