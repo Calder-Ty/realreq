@@ -176,8 +176,6 @@ def source_files(
         for p in paths:
             src = src / p
             src.mkdir()
-    elif is_module:
-        src = tmp_path_factory.mktemp(paths[0], numbered=False)
     else:
         src = tmp_path_factory.mktemp(path, numbered=False)
 
