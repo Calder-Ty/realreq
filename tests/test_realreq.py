@@ -182,12 +182,12 @@ def _is_module(path:pathlib.Path) -> bool:
 def _create_source_directory(tmp_path_factory, path: pathlib.Path) -> pathlib.Path:
     """Creates the source directory given by path"""
     parents = _parent_dirs(path)
-    if len(parents) > 1 and not isinstance(parents, str):
-        # Minus 2 because of the implicit "." dir at the top of the parents list
-        src = tmp_path_factory.mktemp(parents[len(parents)-2] , numbered=False)
-        for p in list(reversed(parents))[2:]:
-            src = src / p.stem
-            src.mkdir()
+
+    # Minus 2 because of the implicit "." dir at the top of the parents list
+    src = tmp_path_factory.mktemp(parents[len(parents)-2] , numbered=False)
+    for p in list(reversed(parents))[2:]:
+        src = src / p.stem
+        src.mkdir()
     return src
 
 def _parent_dirs(path:pathlib.Path) -> typing.Sequence[pathlib.Path]:
