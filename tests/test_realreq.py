@@ -1,4 +1,4 @@
-# Copyright 2020-2022 Tyler Calder
+# Copyright 2020-2023 Tyler Calder
 import collections
 import contextlib
 import io
@@ -163,6 +163,7 @@ def source_files(
     if is_module:
         module = paths[-1]
         paths = paths[:-1]
+
     if len(paths) > 1 and isinstance(paths, list):
         src = tmp_path_factory.mktemp(path[0], numbered=False)
         for p in paths:
@@ -281,7 +282,7 @@ class TestCLI:
 
 
     @pytest.mark.parametrize("s_flag", ["-s", "--source"])
-    def test_default_flags(self, source_files, mocker, s_flag):
+    def test_default_flags(self, source_files, s_flag):
         args = ["cmd", s_flag, str(source_files)]
         actual = self.execute_with_args(args)
         assert actual == "".join(
@@ -290,7 +291,7 @@ class TestCLI:
 
     @pytest.mark.parametrize("s_flag", ["-s", "--source"])
     @pytest.mark.parametrize("d_flag", ["-d", "--deep"])
-    def test_deep_flag(self, source_files, mocker, s_flag, d_flag):
+    def test_deep_flag(self, source_files, s_flag, d_flag):
         args = ["cmd", s_flag, str(source_files), d_flag]
         actual = self.execute_with_args(args)
         assert actual == "".join(
@@ -302,7 +303,6 @@ class TestCLI:
     def test_cli_aliases(
         self,
         source_files,
-        mocker,
         s_flag,
         a_flag,
     ):
@@ -317,7 +317,6 @@ class TestCLI:
         self,
         source_files,
         tmp_path,
-        mocker,
         s_flag,
     ):
         """Makes Sure Aliases are used"""
@@ -333,7 +332,6 @@ class TestCLI:
         self,
         source_files,
         tmp_path,
-        mocker,
         s_flag,
         a_flag,
     ):
@@ -356,7 +354,7 @@ class TestCLI:
     @pytest.mark.parametrize("s_flag", ["-s", "--source"])
     @pytest.mark.parametrize("a_flag", ["-a", "--alias"])
     @pytest.mark.parametrize("i_flag", ["-i", "--invert"])
-    def test_cli_invert_tree(self, source_files, mocker, s_flag, a_flag, i_flag):
+    def test_cli_invert_tree(self, source_files, s_flag, a_flag, i_flag):
         args = ["cmd", s_flag, str(source_files), i_flag, a_flag, "fake_pkg=fake-pkg"]
         actual = self.execute_with_args(args)
         assert actual == _MOCK_DEPENDENCY_TREE_OUTPUT
