@@ -180,10 +180,8 @@ def _is_module(path:pathlib.Path) -> bool:
     return path.suffix.lower() == ".py"
 
 def _create_source_directory(tmp_path_factory, path: pathlib.Path) -> pathlib.Path:
-    parents = path.parents
-    if not _is_module(path):
-        # Hack to get all parts of the path
-        parents = (path / "child").parents
+    """Creates the source directory given by path"""
+    parents = _parent_dirs(path)
     if len(parents) > 1 and not isinstance(parents, str):
         # Minus 2 because of the implicit "." dir at the top of the parents list
         src = tmp_path_factory.mktemp(parents[len(parents)-2] , numbered=False)
@@ -193,6 +191,13 @@ def _create_source_directory(tmp_path_factory, path: pathlib.Path) -> pathlib.Pa
     else:
         src = tmp_path_factory.mktemp(path, numbered=False)
     return src
+
+def _parent_dirs(path:pathlib.Path) -> typing.Sequence[pathlib.Path]:
+    if not _is_module(path):
+        # Hack to get all parts of the path
+        return (path / "child").parents
+    return path.parents
+
 
 def test_search_source_for_used_packages(source_files):
     """Source code is searched and aquires the name of all packages used"""
