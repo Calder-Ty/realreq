@@ -257,12 +257,13 @@ class CLIMocker:
         self._mock_run.stop()
 
 
+def run_realreq():
+    app = realreq.RealReq()
+    app()
+
 class TestCLI:
     """Tests for the CLI of realreq"""
 
-    def run_realreq(self):
-        app = realreq.RealReq()
-        app()
 
     def execute_with_args(self, args: typing.List[str])->str:
         """
@@ -276,7 +277,7 @@ class TestCLI:
         output_buff = io.StringIO()
 
         with CLIMocker(args), contextlib.redirect_stdout(output_buff):
-            self.run_realreq()
+            run_realreq()
         output_buff.seek(0)
         return output_buff.read()
 
