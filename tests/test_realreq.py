@@ -268,9 +268,12 @@ class TestCLI:
         sbuff = io.StringIO()
 
         with CLIMocker(args), contextlib.redirect_stdout(sbuff):
+        output_buff = io.StringIO()
+
+        with CLIMocker(args), contextlib.redirect_stdout(output_buff):
             self.run_realreq()
-        sbuff.seek(0)
-        return sbuff.read()
+        output_buff.seek(0)
+        return output_buff.read()
 
 
     @pytest.mark.parametrize("s_flag", ["-s", "--source"])
