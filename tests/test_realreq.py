@@ -6,6 +6,7 @@ import unittest.mock
 import os
 import sys
 import typing
+import pathlib
 
 import pytest
 from pytest_mock import mocker
@@ -148,32 +149,39 @@ def mock_subprocess_run(*args, **kwargs):
         return mock_pip_freeze(*args, **kwargs)
 
 
-@pytest.fixture(scope="session", params=["src", "path/to/src", "go/to/src/module.py"])
+@pytest.fixture(scope="session", params=["src", "double//to//src", "path/to/src", "go/to/src/module.py"])
 def source_files(
     tmp_path_factory,
     request,
 ):
-    """Creates a temp directory that tests different source files
+    """
+    Creates a temp directory with a source file
 
-    returns: path to directory being used for test
+    This is a session scoped directory, so the files should be ONLY be read, and not modified.
+
+    Returns: path to directory being used for test
     """
     path = os.path.normpath(request.param)
     paths = path.split("/")
     is_module = os.path.splitext(paths[-1])[1].lower() == ".py"
+
+    # Determine if it is a module
     if is_module:
         module = paths[-1]
         paths = paths[:-1]
 
+    # Build out source directory
     if len(paths) > 1 and isinstance(paths, list):
-        src = tmp_path_factory.mktemp(path[0], numbered=False)
+        src = tmp_path_factory.mktemp(paths.pop(0), numbered=False)
         for p in paths:
             src = src / p
             src.mkdir()
     elif is_module:
-        src = tmp_path_factory.mktemp(path[0], numbered=False)
+        src = tmp_path_factory.mktemp(paths[0], numbered=False)
     else:
         src = tmp_path_factory.mktemp(path, numbered=False)
 
+    # Write out source file
     if is_module:
         src = src / module
         src.write_text(CONTENT)
