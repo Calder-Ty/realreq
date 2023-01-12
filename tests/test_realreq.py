@@ -188,8 +188,6 @@ def _create_source_directory(tmp_path_factory, path: pathlib.Path) -> pathlib.Pa
         for p in list(reversed(parents))[2:]:
             src = src / p.stem
             src.mkdir()
-    else:
-        src = tmp_path_factory.mktemp(path, numbered=False)
     return src
 
 def _parent_dirs(path:pathlib.Path) -> typing.Sequence[pathlib.Path]:
