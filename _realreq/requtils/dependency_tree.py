@@ -1,4 +1,4 @@
-"""Implementation of a Dependency Tree stucture"""
+"""Implementation of a Dependency Tree structure"""
 import typing
 
 
@@ -15,10 +15,6 @@ class _Dependency:
 
     def invert(self):
         self.dependants, self.dependencies = self.dependencies, self.dependants
-
-
-class DependencyTree:
-    pass
 
 
 class DependencyGraph:
