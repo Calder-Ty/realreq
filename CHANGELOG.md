@@ -1,7 +1,7 @@
 # Changelog
 
 ## [unreleased]
-
+- Fix: Bug in dependency tree where I forgot to raise error
 ## 0.7.2
 ### Fixes/Improvements
 - fixed bug where infinite loop could be created
