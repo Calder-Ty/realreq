@@ -149,7 +149,10 @@ def mock_subprocess_run(*args, **kwargs):
         return mock_pip_freeze(*args, **kwargs)
 
 
-@pytest.fixture(scope="session", params=["src", "double//to//src", "path/to/src", "go/to/src/module.py"])
+@pytest.fixture(
+    scope="session",
+    params=["src", "double//to//src", "path/to/src", "go/to/src/module.py"],
+)
 def source_files(
     tmp_path_factory,
     request,
@@ -175,22 +178,24 @@ def source_files(
     return src
 
 
-def _is_module(path:pathlib.Path) -> bool:
+def _is_module(path: pathlib.Path) -> bool:
     """Tests if path is a Python Module"""
     return path.suffix.lower() == ".py"
+
 
 def _create_source_directory(tmp_path_factory, path: pathlib.Path) -> pathlib.Path:
     """Creates the source directory given by path"""
     parents = _parent_dirs(path)
 
     # Minus 2 because of the implicit "." dir at the top of the parents list
-    src = tmp_path_factory.mktemp(parents[len(parents)-2] , numbered=False)
+    src = tmp_path_factory.mktemp(parents[len(parents) - 2], numbered=False)
     for p in list(reversed(parents))[2:]:
         src = src / p.stem
         src.mkdir()
     return src
 
-def _parent_dirs(path:pathlib.Path) -> typing.Sequence[pathlib.Path]:
+
+def _parent_dirs(path: pathlib.Path) -> typing.Sequence[pathlib.Path]:
     if not _is_module(path):
         # Hack to get all parts of the path
         return (path / "child").parents
@@ -199,7 +204,7 @@ def _parent_dirs(path:pathlib.Path) -> typing.Sequence[pathlib.Path]:
 
 def test_search_source_for_used_packages(source_files):
     """Source code is searched and aquires the name of all packages used"""
-    pkgs = realreq.search_source(str(source_files))
+    pkgs = realreq.search_source(source_files)
     expected = [
         "requests",
         "foo",
@@ -252,10 +257,8 @@ def test_parse_versions():
 
 
 class CLIMocker:
-
     def __init__(self, cli_args):
         self._cli_args = cli_args
-
 
     def __enter__(self):
         self._orig_argv = sys.argv
@@ -263,8 +266,6 @@ class CLIMocker:
         self._patched_argv = patched_argv.start()
         self._mock_run = unittest.mock.patch("subprocess.run").start()
         self._mock_run.side_effect = mock_subprocess_run
-
-
 
     def __exit__(self, exc_type, exc_value, traceback):
         sys.argv = self._orig_argv
@@ -275,11 +276,11 @@ def run_realreq():
     app = realreq.RealReq()
     app()
 
+
 class TestCLI:
     """Tests for the CLI of realreq"""
 
-
-    def execute_with_args(self, args: typing.List[str])->str:
+    def execute_with_args(self, args: typing.List[str]) -> str:
         """
         Executes realreq with the given args returning
 
@@ -294,7 +295,6 @@ class TestCLI:
             run_realreq()
         output_buff.seek(0)
         return output_buff.read()
-
 
     @pytest.mark.parametrize("s_flag", ["-s", "--source"])
     def test_default_flags(self, source_files, s_flag):
