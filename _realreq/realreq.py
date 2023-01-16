@@ -120,20 +120,8 @@ def split_aliases(aliases: typing.List[str]) -> typing.Dict[str, str]:
 
 def search_source(source: pathlib.Path, aliases: typing.Dict = ALIASES):
     """Go through the source directory and identify all modules"""
-    is_module = source.is_file() and source.suffix.lower() == ".py"
-    if is_module:
-        source_files = [source]
-    else:
-        source_files = list(source.rglob("*.[Pp][Yy]"))
-
-    imports = []
-    for file_ in source_files:
-        with file_.open() as f:
-            lines = f.readlines()
-        for line in lines:
-            module = requtils.scan_for_imports(line)
-            if module:
-                imports.append(module)
+    source_files = find_all_source_files(source)
+    imports = find_imports(source_files)
 
     # Now we want to clean out the imports that we have
     # 1. Eliminate the imports which start with `.` These are relative
@@ -148,13 +136,37 @@ def search_source(source: pathlib.Path, aliases: typing.Dict = ALIASES):
     imports = [m for m in imports if m not in STD_LIBS]
     imports = set(imports)
 
-    source_module = source.resolve().parent.stem if is_module else source.stem
+    source_module = source.resolve().parent.stem if is_module(source) else source.stem
     imports.discard(source_module)
     for import_name, install_name in aliases.items():
         if import_name in imports:
             imports.remove(import_name)
             imports.add(install_name)
 
+    return imports
+
+
+def find_all_source_files(source: pathlib.Path):
+    """Generates a list of all source files"""
+    if is_module(source):
+        return [source]
+    else:
+        return list(source.rglob("*.[Pp][Yy]"))
+
+
+def is_module(path: pathlib.Path) -> bool:
+    return path.is_file() and path.suffix.lower() == ".py"
+
+
+def find_imports(source_files: typing.List[pathlib.Path]) -> typing.List[str]:
+    imports = []
+    for file_ in source_files:
+        with file_.open() as f:
+            lines = f.readlines()
+        for line in lines:
+            module = requtils.scan_for_imports(line)
+            if module:
+                imports.append(module)
     return imports
 
 
