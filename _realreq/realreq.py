@@ -118,7 +118,7 @@ def split_aliases(aliases: typing.List[str]) -> typing.Dict[str, str]:
     return dict(res)
 
 
-def search_source(source, aliases=ALIASES):
+def search_source(source: pathlib.Path, aliases: typing.Dict = ALIASES):
     """Go through the source directory and identify all modules"""
     source = pathlib.Path(source)
     is_module = source.is_file() and source.suffix.lower() == ".py"
