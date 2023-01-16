@@ -122,22 +122,8 @@ def search_source(source: pathlib.Path, aliases: typing.Dict = ALIASES):
     """Go through the source directory and identify all modules"""
     source_files = find_all_source_files(source)
     imports = find_imports(source_files)
+    imports = clean_imports(imports, source)
 
-    # Now we want to clean out the imports that we have
-    # 1. Eliminate the imports which start with `.` These are relative
-    #   imports, and so don't matter for pip requirements
-    # 2. Split imports on `.` we only want the top level module name
-    # 3. Remove STD LIB imports
-    # 4. Remove imports whose name begins with the same name as `source` these
-    #   are local modules, not modules being installed from pip
-    # 5. Rename imports who have an Alias record
-    imports = [m for m in imports if not m.startswith(".")]
-    imports = [m.split(".")[0] for m in imports]
-    imports = [m for m in imports if m not in STD_LIBS]
-    imports = set(imports)
-
-    source_module = source.resolve().parent.stem if is_module(source) else source.stem
-    imports.discard(source_module)
     for import_name, install_name in aliases.items():
         if import_name in imports:
             imports.remove(import_name)
@@ -168,6 +154,39 @@ def find_imports(source_files: typing.List[pathlib.Path]) -> typing.List[str]:
             if module:
                 imports.append(module)
     return imports
+
+
+def clean_imports(imports: typing.List[str], source: pathlib.Path) -> typing.Set[str]:
+    """Clean out the imports that we have to what we need
+
+    Eliminates Relative imports, reorganizes to only the top level module, removes std_lib modules
+    and removes local modules.
+    """
+    imports = filter_relative_imports(imports)
+    imports = filter_to_top_level_package(imports)
+    imports = filter_std_libs(imports)
+    # 4. Remove imports whose name begins with the same name as `source` these
+    #   are local modules, not modules being installed from pip
+    imports = set(imports)
+    filter_local(imports, source)
+    return imports
+
+
+def filter_relative_imports(imports: typing.List[str]) -> typing.List[str]:
+    return [m for m in imports if not m.startswith(".")]
+
+
+def filter_to_top_level_package(imports: typing.List[str]) -> typing.List[str]:
+    return [m.split(".")[0] for m in imports]
+
+
+def filter_std_libs(imports: typing.List[str]) -> typing.List[str]:
+    return [m for m in imports if m not in STD_LIBS]
+
+
+def filter_local(imports: typing.Set[str], source: pathlib.Path):
+    source_module = source.resolve().parent.stem if is_module(source) else source.stem
+    imports.discard(source_module)
 
 
 if __name__ == "__main__":
