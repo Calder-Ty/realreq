@@ -9,7 +9,7 @@ import typing
 import pathlib
 
 import pytest
-from pytest_mock import mocker
+import pytest_mock
 
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -149,7 +149,10 @@ def mock_subprocess_run(*args, **kwargs):
         return mock_pip_freeze(*args, **kwargs)
 
 
-@pytest.fixture(scope="session", params=["src", "double//to//src", "path/to/src", "go/to/src/module.py"])
+@pytest.fixture(
+    scope="session",
+    params=["src", "double//to//src", "path/to/src", "go/to/src/module.py"],
+)
 def source_files(
     tmp_path_factory,
     request,
@@ -175,26 +178,45 @@ def source_files(
     return src
 
 
-def _is_module(path:pathlib.Path) -> bool:
+def _is_module(path: pathlib.Path) -> bool:
     """Tests if path is a Python Module"""
     return path.suffix.lower() == ".py"
+
 
 def _create_source_directory(tmp_path_factory, path: pathlib.Path) -> pathlib.Path:
     """Creates the source directory given by path"""
     parents = _parent_dirs(path)
 
     # Minus 2 because of the implicit "." dir at the top of the parents list
-    src = tmp_path_factory.mktemp(parents[len(parents)-2] , numbered=False)
+    src = tmp_path_factory.mktemp(parents[len(parents) - 2], numbered=False)
     for p in list(reversed(parents))[2:]:
         src = src / p.stem
         src.mkdir()
     return src
 
-def _parent_dirs(path:pathlib.Path) -> typing.Sequence[pathlib.Path]:
+
+def _parent_dirs(path: pathlib.Path) -> typing.Sequence[pathlib.Path]:
     if not _is_module(path):
         # Hack to get all parts of the path
         return (path / "child").parents
     return path.parents
+
+
+@pytest.fixture(params=["-s", "--source"])
+def source_flag(request):
+    return request.param
+
+@pytest.fixture(params=["-a", "--alias"])
+def alias_flag(request):
+    return request.param
+
+@pytest.fixture(params=["-d", "--deep"])
+def deep_flag(request):
+    return request.param
+
+@pytest.fixture(params=["-i", "--invert"])
+def invert_flag(request):
+    return request.param
 
 
 def test_search_source_for_used_packages(source_files):
@@ -252,10 +274,9 @@ def test_parse_versions():
 
 
 class CLIMocker:
-
     def __init__(self, cli_args):
         self._cli_args = cli_args
-
+        self._orig_argv = None
 
     def __enter__(self):
         self._orig_argv = sys.argv
@@ -263,8 +284,6 @@ class CLIMocker:
         self._patched_argv = patched_argv.start()
         self._mock_run = unittest.mock.patch("subprocess.run").start()
         self._mock_run.side_effect = mock_subprocess_run
-
-
 
     def __exit__(self, exc_type, exc_value, traceback):
         sys.argv = self._orig_argv
@@ -275,11 +294,11 @@ def run_realreq():
     app = realreq.RealReq()
     app()
 
+
 class TestCLI:
     """Tests for the CLI of realreq"""
 
-
-    def execute_with_args(self, args: typing.List[str])->str:
+    def execute_with_args(self, args: typing.List[str]) -> str:
         """
         Executes realreq with the given args returning
 
@@ -295,81 +314,69 @@ class TestCLI:
         output_buff.seek(0)
         return output_buff.read()
 
-
-    @pytest.mark.parametrize("s_flag", ["-s", "--source"])
-    def test_default_flags(self, source_files, s_flag):
-        args = ["cmd", s_flag, str(source_files)]
+    def test_default_flags(self, source_flag, source_files):
+        args = ["cmd", source_flag, str(source_files)]
         actual = self.execute_with_args(args)
         assert actual == "".join(
             "{0}=={1}\n".format(k, v) for k, v in _SHALLOW_DEPENDENCIES.items()
         )
 
-    @pytest.mark.parametrize("s_flag", ["-s", "--source"])
-    @pytest.mark.parametrize("d_flag", ["-d", "--deep"])
-    def test_deep_flag(self, source_files, s_flag, d_flag):
-        args = ["cmd", s_flag, str(source_files), d_flag]
+    def test_deep_flag(self, source_flag, source_files, deep_flag):
+        args = ["cmd", source_flag, str(source_files), deep_flag]
         actual = self.execute_with_args(args)
         assert actual == "".join(
             "{0}=={1}\n".format(k, v) for k, v in _DEEP_DEPENDENCIES.items()
         )
 
-    @pytest.mark.parametrize("s_flag", ["-s", "--source"])
-    @pytest.mark.parametrize("a_flag", ["-a", "--alias"])
     def test_cli_aliases(
         self,
+        source_flag,
         source_files,
-        s_flag,
-        a_flag,
+        alias_flag,
     ):
         """Makes Sure Aliases are used"""
-        args = ["cmd", s_flag, str(source_files), a_flag, "fake_pkg=fake-pkg"]
+        args = ["cmd", source_flag, str(source_files), alias_flag, "fake_pkg=fake-pkg"]
         actual = self.execute_with_args(args)
 
         assert "fake-pkg==0.0.1" in actual
 
-    @pytest.mark.parametrize("s_flag", ["-s", "--source"])
     def test_file_aliases(
         self,
+        source_flag,
         source_files,
         tmp_path,
-        s_flag,
     ):
         """Makes Sure Aliases are used"""
         f = tmp_path / "alias_file.txt"
         f.write_bytes(b"fake_pkg=fake-pkg")
-        args = ["cmd", s_flag, str(source_files), "--alias-file", str(f.absolute())]
+        args = ["cmd", source_flag, str(source_files), "--alias-file", str(f.absolute())]
         actual = self.execute_with_args(args)
         assert "fake-pkg==0.0.1" in actual
 
-    @pytest.mark.parametrize("s_flag", ["-s", "--source"])
-    @pytest.mark.parametrize("a_flag", ["-a", "--alias"])
     def test_cli_overrides_file_aliases(
         self,
+        source_flag,
         source_files,
         tmp_path,
-        s_flag,
-        a_flag,
+        alias_flag,
     ):
-        """Makes Sure Aliases are used"""
+        """Makes Sure cli args overrides file aliases"""
         f = tmp_path / "alias_file.txt"
         f.write_bytes(b"fake_pkg=false-pkg")
 
         args = [
             "cmd",
-            s_flag,
+            source_flag,
             str(source_files),
             "--alias-file",
             str(f.absolute()),
-            a_flag,
+            alias_flag,
             "fake_pkg=fake-pkg",
         ]
         actual = self.execute_with_args(args)
         assert "fake-pkg==0.0.1" in actual
 
-    @pytest.mark.parametrize("s_flag", ["-s", "--source"])
-    @pytest.mark.parametrize("a_flag", ["-a", "--alias"])
-    @pytest.mark.parametrize("i_flag", ["-i", "--invert"])
-    def test_cli_invert_tree(self, source_files, s_flag, a_flag, i_flag):
-        args = ["cmd", s_flag, str(source_files), i_flag, a_flag, "fake_pkg=fake-pkg"]
+    def test_cli_invert_tree(self, source_flag, source_files, invert_flag, alias_flag):
+        args = ["cmd", source_flag, str(source_files), invert_flag, alias_flag, "fake_pkg=fake-pkg"]
         actual = self.execute_with_args(args)
         assert actual == _MOCK_DEPENDENCY_TREE_OUTPUT
