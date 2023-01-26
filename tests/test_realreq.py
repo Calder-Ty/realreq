@@ -206,13 +206,16 @@ def _parent_dirs(path: pathlib.Path) -> typing.Sequence[pathlib.Path]:
 def source_flag(request):
     return request.param
 
+
 @pytest.fixture(params=["-a", "--alias"])
 def alias_flag(request):
     return request.param
 
+
 @pytest.fixture(params=["-d", "--deep"])
 def deep_flag(request):
     return request.param
+
 
 @pytest.fixture(params=["-i", "--invert"])
 def invert_flag(request):
@@ -295,6 +298,23 @@ def run_realreq():
     app()
 
 
+CLIFlag = typing.Tuple
+
+
+class ArgvBuilder:
+    """Builds out the Command Line Argv"""
+
+    def __init__(self):
+        self._argvs = ["cmd"]
+
+    def add_flag(self, flag: CLIFlag):
+        self._argvs.extend(flag)
+        return self
+
+    def arguments(self):
+        return self._argvs.copy()
+
+
 class TestCLI:
     """Tests for the CLI of realreq"""
 
@@ -315,14 +335,19 @@ class TestCLI:
         return output_buff.read()
 
     def test_default_flags(self, source_flag, source_files):
-        args = ["cmd", source_flag, str(source_files)]
+        args = ArgvBuilder().add_flag((source_flag, str(source_files))).arguments()
         actual = self.execute_with_args(args)
         assert actual == "".join(
             "{0}=={1}\n".format(k, v) for k, v in _SHALLOW_DEPENDENCIES.items()
         )
 
     def test_deep_flag(self, source_flag, source_files, deep_flag):
-        args = ["cmd", source_flag, str(source_files), deep_flag]
+        args = (
+            ArgvBuilder()
+            .add_flag((source_flag, str(source_files)))
+            .add_flag((deep_flag,))
+            .arguments()
+        )
         actual = self.execute_with_args(args)
         assert actual == "".join(
             "{0}=={1}\n".format(k, v) for k, v in _DEEP_DEPENDENCIES.items()
@@ -335,7 +360,12 @@ class TestCLI:
         alias_flag,
     ):
         """Makes Sure Aliases are used"""
-        args = ["cmd", source_flag, str(source_files), alias_flag, "fake_pkg=fake-pkg"]
+        args = (
+            ArgvBuilder()
+            .add_flag((source_flag, str(source_files)))
+            .add_flag((alias_flag, "fake_pkg=fake-pkg"))
+            .arguments()
+        )
         actual = self.execute_with_args(args)
 
         assert "fake-pkg==0.0.1" in actual
@@ -349,7 +379,12 @@ class TestCLI:
         """Makes Sure Aliases are used"""
         f = tmp_path / "alias_file.txt"
         f.write_bytes(b"fake_pkg=fake-pkg")
-        args = ["cmd", source_flag, str(source_files), "--alias-file", str(f.absolute())]
+        args = (
+            ArgvBuilder()
+            .add_flag((source_flag, str(source_files)))
+            .add_flag(("--alias-file", str(f.absolute())))
+            .arguments()
+        )
         actual = self.execute_with_args(args)
         assert "fake-pkg==0.0.1" in actual
 
@@ -364,19 +399,48 @@ class TestCLI:
         f = tmp_path / "alias_file.txt"
         f.write_bytes(b"fake_pkg=false-pkg")
 
-        args = [
-            "cmd",
-            source_flag,
-            str(source_files),
-            "--alias-file",
-            str(f.absolute()),
-            alias_flag,
-            "fake_pkg=fake-pkg",
-        ]
+        args = (
+            ArgvBuilder()
+            .add_flag(
+                (
+                    source_flag,
+                    str(source_files),
+                )
+            )
+            .add_flag(
+                (
+                    "--alias-file",
+                    str(f.absolute()),
+                )
+            )
+            .add_flag(
+                (
+                    alias_flag,
+                    "fake_pkg=fake-pkg",
+                )
+            )
+            .arguments()
+        )
         actual = self.execute_with_args(args)
         assert "fake-pkg==0.0.1" in actual
 
     def test_cli_invert_tree(self, source_flag, source_files, invert_flag, alias_flag):
-        args = ["cmd", source_flag, str(source_files), invert_flag, alias_flag, "fake_pkg=fake-pkg"]
+        args = (
+            ArgvBuilder()
+            .add_flag(
+                (
+                    source_flag,
+                    str(source_files),
+                )
+            )
+            .add_flag((invert_flag,))
+            .add_flag(
+                (
+                    alias_flag,
+                    "fake_pkg=fake-pkg",
+                )
+            )
+            .arguments()
+        )
         actual = self.execute_with_args(args)
         assert actual == _MOCK_DEPENDENCY_TREE_OUTPUT
