@@ -204,7 +204,7 @@ def _parent_dirs(path: pathlib.Path) -> typing.Sequence[pathlib.Path]:
 
 @pytest.fixture(params=["-s", "--source"])
 def source_flag(request):
-    return lambda path: (request.param, path)
+    return lambda path: (request.param, str(path))
 
 
 @pytest.fixture(params=["-a", "--alias"])
@@ -224,12 +224,12 @@ def invert_flag(request):
 
 @pytest.fixture()
 def alias_file():
-    return lambda path: ("--alias-file", path)
+    return lambda path: ("--alias-file", str(path))
 
 
 def test_search_source_for_used_packages(source_files):
     """Source code is searched and aquires the name of all packages used"""
-    pkgs = realreq.search_source(str(source_files))
+    pkgs = realreq.search_source(source_files)
     expected = [
         "requests",
         "foo",
@@ -340,7 +340,7 @@ class TestCLI:
         return output_buff.read()
 
     def test_default_flags(self, source_flag, source_files):
-        args = ArgvBuilder().add_flag(source_flag(str(source_files))).arguments()
+        args = ArgvBuilder().add_flag(source_flag(source_files)).arguments()
         actual = self.execute_with_args(args)
         assert actual == "".join(
             "{0}=={1}\n".format(k, v) for k, v in _SHALLOW_DEPENDENCIES.items()
@@ -349,7 +349,7 @@ class TestCLI:
     def test_deep_flag(self, source_flag, source_files, deep_flag):
         args = (
             ArgvBuilder()
-            .add_flag(source_flag(str(source_files)))
+            .add_flag(source_flag(source_files))
             .add_flag(deep_flag())
             .arguments()
         )
@@ -367,27 +367,21 @@ class TestCLI:
         """Makes Sure Aliases are used"""
         args = (
             ArgvBuilder()
-            .add_flag(source_flag(str(source_files)))
+            .add_flag(source_flag(source_files))
             .add_flag(alias_flag("fake_pkg=fake-pkg"))
             .arguments()
         )
         actual = self.execute_with_args(args)
         assert "fake-pkg==0.0.1" in actual
 
-    def test_file_aliases(
-        self,
-        source_flag,
-        source_files,
-        tmp_path,
-        alias_file
-    ):
+    def test_file_aliases(self, source_flag, source_files, tmp_path, alias_file):
         """Makes Sure Aliases are used"""
         f = tmp_path / "alias_file.txt"
         f.write_bytes(b"fake_pkg=fake-pkg")
         args = (
             ArgvBuilder()
-            .add_flag(source_flag(str(source_files)))
-            .add_flag(alias_file(str(f.absolute())))
+            .add_flag(source_flag(source_files))
+            .add_flag(alias_file(f.absolute()))
             .arguments()
         )
         actual = self.execute_with_args(args)
@@ -402,8 +396,8 @@ class TestCLI:
 
         args = (
             ArgvBuilder()
-            .add_flag(source_flag(str(source_files)))
-            .add_flag(alias_file(str(f.absolute())))
+            .add_flag(source_flag(source_files))
+            .add_flag(alias_file(f.absolute()))
             .add_flag(alias_flag("fake_pkg=fake-pkg"))
             .arguments()
         )
@@ -413,7 +407,7 @@ class TestCLI:
     def test_cli_invert_tree(self, source_flag, source_files, invert_flag, alias_flag):
         args = (
             ArgvBuilder()
-            .add_flag(source_flag(str(source_files)))
+            .add_flag(source_flag(source_files))
             .add_flag(invert_flag())
             .add_flag(alias_flag("fake_pkg=fake-pkg"))
             .arguments()
