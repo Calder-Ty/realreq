@@ -18,7 +18,7 @@ import fake_pkg
 """
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def tempdir():
     tmp = pathlib.Path(tempfile.mkdtemp())
     yield tmp
@@ -51,7 +51,6 @@ def alias_file():
 
 
 @pytest.fixture(
-    scope="module",
     params=["src", "double//to//src", "path/to/src", "go/to/src/module.py"],
 )
 def source_files(
@@ -60,8 +59,6 @@ def source_files(
 ):
     """
     Creates a temp directory with a source file
-
-    This is a session scoped directory, so the files should be ONLY be read, and not modified.
 
     Returns: path to directory being used for test
     """
