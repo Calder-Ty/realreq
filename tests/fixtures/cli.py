@@ -1,5 +1,8 @@
+import os
 import pytest
 import pathlib
+import shutil
+import tempfile
 import typing
 
 CONTENT = """
@@ -13,6 +16,14 @@ import abbrev
 import src.local_module
 import fake_pkg
 """
+
+
+@pytest.fixture(scope="module")
+def tempdir():
+    tmp = pathlib.Path(tempfile.mkdtemp())
+    yield tmp
+    shutil.rmtree(tmp)
+
 
 @pytest.fixture(params=["-s", "--source"])
 def source_flag(request):
@@ -40,11 +51,11 @@ def alias_file():
 
 
 @pytest.fixture(
-    scope="session",
+    scope="module",
     params=["src", "double//to//src", "path/to/src", "go/to/src/module.py"],
 )
 def source_files(
-    tmp_path_factory,
+    tempdir,
     request,
 ):
     """
@@ -55,7 +66,7 @@ def source_files(
     Returns: path to directory being used for test
     """
     path = pathlib.Path(request.param)
-    src = _create_source_directory(tmp_path_factory, path)
+    src = _create_source_directory(tempdir, path)
 
     # Write out source file
     if _is_module(path):
@@ -73,15 +84,15 @@ def _is_module(path: pathlib.Path) -> bool:
     return path.suffix.lower() == ".py"
 
 
-def _create_source_directory(tmp_path_factory, path: pathlib.Path) -> pathlib.Path:
+def _create_source_directory(tempdir: pathlib.Path, path: pathlib.Path) -> pathlib.Path:
     """Creates the source directory given by path"""
     parents = _parent_dirs(path)
 
-    # Minus 2 because of the implicit "." dir at the top of the parents list
-    src = tmp_path_factory.mktemp(parents[len(parents) - 2], numbered=False)
-    for p in list(reversed(parents))[2:]:
+    # Minus 1 because of the implicit "." dir at the top of the parents list
+    src = tempdir
+    for p in list(reversed(parents))[1:]:
         src = src / p.stem
-        src.mkdir()
+    src.mkdir(parents=True)
     return src
 
 
