@@ -11,6 +11,7 @@ import pathlib
 import pytest
 import pytest_mock
 from tests.fixtures.cli import (
+    tempdir,
     source_flag,
     alias_flag,
     deep_flag,
@@ -18,7 +19,6 @@ from tests.fixtures.cli import (
     alias_file,
     source_files,
 )
-
 
 
 import _realreq.realreq as realreq
