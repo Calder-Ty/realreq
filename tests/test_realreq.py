@@ -29,6 +29,7 @@ realreq.ALIASES = MOCK_ALIASES
 
 _MOCK_DEPENDENCY_TREE = {
     "foo": ["bar"],
+    "bar": [],
     "requests": ["baz", "spam"],
     "baz": [],
     "spam": ["egg", "wheel"],
@@ -166,7 +167,10 @@ def test_build_dependency_list(mocker):
 
     pkgs = ["requests", "foo", "local_module2", "abbreviation", "fake-pkg"]
     dep_tree = requtils.build_dep_list(pkgs)
-    assert all([_ in dep_tree for _ in list(_MOCK_DEPENDENCY_TREE.keys())])
+    expected = list(_MOCK_DEPENDENCY_TREE.keys())
+
+    assert all([_ in dep_tree for _ in expected])
+    assert all([_ in expected for _ in dep_tree])
 
 
 def test_get_dependency_versions(mocker):
@@ -178,6 +182,7 @@ def test_get_dependency_versions(mocker):
     versions = requtils.get_dependency_versions(pkgs)
     assert versions == {
         "foo": "foo==1.0.0",
+        "bar": "bar==git-repo @ git+https://github.com/example/user/bar.git@1.2.3",
         "baz": "baz==0.1.0",
         "spam": "spam==3.2.12",
         "egg": "egg==13.0",
