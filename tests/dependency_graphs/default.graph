@@ -1,0 +1,208 @@
+# Dependencies for testing realreq
+#
+# [dep]
+# alias:
+# dependencies: x,y,z
+# dependents:
+# show_out:
+
+[foo]
+alias:
+dependencies: bar
+dependents:
+show_out: Name: foo
+	Version: 1.0.0
+	Summary: foo: Your CODE ON STEROIDS
+	Home-page: https://docs.foo.org/en/latest/
+	Author: Jim Bob, Beau Jangle
+	Author-email: None
+	License: MIT
+	Location: /usr/lib/python3.9/site-packages
+	Requires: bar
+	Required-by:
+
+
+[bar]
+alias:
+dependencies:
+dependents: foo
+show_out: Name: bar
+	Version: git-repo @ git+https://github.com/example/user/bar.git@1.2.3
+	Summary: foo: Your CODE ON STEROIDS
+	Home-page: https://docs.foo.org/en/latest/
+	Author: Jim Bob, Beau Jangle
+	Author-email: None
+	License: MIT
+	Location: /usr/lib/python3.9/site-packages
+	Requires:
+	Required-by:
+
+[requests]
+alias:
+dependencies: baz, spam
+dependents:
+show_out: Name: requests
+	Version: 0.2.0
+	Summary: requests: Your CODE ON STEROIDS
+	Home-page: https://docs.foo.org/en/latest/
+	Author: Jim Bob, Beau Jangle
+	Author-email: None
+	License: MIT
+	Location: /usr/lib/python3.9/site-packages
+	Requires: baz, spam
+	Required-by:
+
+
+[baz]
+alias:
+dependencies:
+dependents: requests
+show_out: Name: baz
+	Version: 0.1.0
+	Summary: baz: Your CODE ON STEROIDS
+	Home-page: https://docs.baz.org/en/latest/
+	Author: Jim Bob, Beau Jangle
+	Author-email: None
+	License: MIT
+	Location: /usr/lib/python3.9/site-packages
+	Requires:
+	Required-by:
+
+
+[spam]
+alias:
+dependencies: egg, wheel
+dependents: requests
+show_out: Name: spam
+	Version: 3.2.12
+	Summary: spam: Your CODE ON STEROIDS
+	Home-page: https://docs.spam.org/en/latest/
+	Author: Jim Bob, Beau Jangle
+	Author-email: None
+	License: MIT
+	Location: /usr/lib/python3.9/site-packages
+	Requires: egg, wheel
+	Required-by:
+
+
+[egg]
+alias:
+dependencies: pip
+dependents: spam
+show_out: Name: egg
+	Version: 13.0
+	Summary: egg: Your CODE ON STEROIDS
+	Home-page: https://docs.egg.org/en/latest/
+	Author: Jim Bob, Beau Jangle
+	Author-email: None
+	License: MIT
+	Location: /usr/lib/python3.9/site-packages
+	Requires: pip
+	Required-by:
+
+
+[pip]
+alias:
+dependencies:
+dependents: egg
+show_out: Name: pip
+	Version: 2.12.1
+	Summary: pip: Your CODE ON STEROIDS
+	Home-page: https://docs.pip.org/en/latest/
+	Author: Jim Bob, Beau Jangle
+	Author-email: None
+	License: MIT
+	Location: /usr/lib/python3.9/site-packages
+	Requires:
+	Required-by:
+
+[wheel]
+alias:
+dependencies:
+dependents: spam
+show_out: Name: wheel
+	Version: 1.1.1
+	Summary: wheel: Your CODE ON STEROIDS
+	Home-page: https://docs.wheel.org/en/latest/
+	Author: Jim Bob, Beau Jangle
+	Author-email: None
+	License: MIT
+	Location: /usr/lib/python3.9/site-packages
+	Requires:
+	Required-by:
+
+[abbreviation]
+alias:
+dependencies:
+dependents:
+show_out: Name: abbreviation
+	Version: 1.2.1
+	Summary: abbreviation: Your CODE ON STEROIDS
+	Home-page: https://docs.abbreviation.org/en/latest/
+	Author: Jim Bob, Beau Jangle
+	Author-email: None
+	License: MIT
+	Location: /usr/lib/python3.9/site-packages
+	Requires:
+	Required-by:
+
+
+[fake-pkg]
+alias: fake_pkg
+dependencies:
+dependents:
+show_out: Name: fake-pkg
+	Version: 0.0.1
+	Summary: fake-pkg: Your CODE ON STEROIDS
+	Home-page: https://docs.fake-pkg.org/en/latest/
+	Author: Jim Bob, Beau Jangle
+	Author-email: None
+	License: MIT
+	Location: /usr/lib/python3.9/site-packages
+	Requires:
+	Required-by:
+
+[notused]
+alias:
+dependencies:
+dependents:
+show_out: Name: notused
+	Version: 201.10.1
+	Summary: notused: Your CODE ON STEROIDS
+	Home-page: https://docs.notused.org/en/latest/
+	Author: Jim Bob, Beau Jangle
+	Author-email: None
+	License: MIT
+	Location: /usr/lib/python3.9/site-packages
+	Requires:
+	Required-by:
+
+[devdep]
+alias:
+dependencies: baz
+dependents:
+show_out: Name: devdep
+	Version: 7.1.2
+	Summary: devdep: Your CODE ON STEROIDS
+	Home-page: https://docs.devdep.org/en/latest/
+	Author: Jim Bob, Beau Jangle
+	Author-email: None
+	License: MIT
+	Location: /usr/lib/python3.9/site-packages
+	Requires: baz
+	Required-by:
+
+[testdep]
+alias:
+dependencies:
+dependents:
+show_out: Name: testdep
+	Version: 0.1.3
+	Summary: testdep: Your CODE ON STEROIDS
+	Home-page: https://docs.testdep.org/en/latest/
+	Author: Jim Bob, Beau Jangle
+	Author-email: None
+	License: MIT
+	Location: /usr/lib/python3.9/site-packages
+	Requires: bar
+	Required-by:
