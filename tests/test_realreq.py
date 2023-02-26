@@ -10,6 +10,7 @@ import pathlib
 
 import pytest
 import pytest_mock
+import graph_data
 from tests.fixtures.cli import (
     tempdir,
     source_flag,
@@ -24,34 +25,16 @@ from tests.fixtures.cli import (
 import _realreq.realreq as realreq
 import _realreq.requtils as requtils
 
+HERE = pathlib.Path(__file__).parent
+GRAPH_PATH = HERE / "dependency_graphs/default.graph"
+GRAPH = graph_data.GraphTestData(HERE / "dependency_graphs/default.graph")
+
 MOCK_ALIASES = {"abbrev": "abbreviation"}
 realreq.ALIASES = MOCK_ALIASES
 
-_MOCK_DEPENDENCY_TREE = {
-    "foo": ["bar"],
-    "bar": [],
-    "requests": ["baz", "spam"],
-    "baz": [],
-    "spam": ["egg", "wheel"],
-    "egg": ["pip"],
-    "pip": [],
-    "wheel": [],
-    "abbreviation": [],
-    "fake-pkg": [],
-}
+_MOCK_DEPENDENCY_TREE = GRAPH.dep_list()
 
-_MOCK_DEPENDENCY_TREE_INVERTED = {
-    "foo": [],
-    "bar": ["foo"],
-    "baz": ["requests"],
-    "spam": ["requests"],
-    "egg": ["spam"],
-    "wheel": ["spam"],
-    "pip": ["egg"],
-    "abbreviation": [],
-    "fake-pkg": [],
-    "requests": [],
-}
+_MOCK_DEPENDENCY_TREE_INVERTED = GRAPH.inverted_list()
 
 _MOCK_DEPENDENCY_TREE_OUTPUT = """- abbreviation
 - bar
@@ -68,21 +51,7 @@ _MOCK_DEPENDENCY_TREE_OUTPUT = """- abbreviation
     |- requests
 """
 
-_MOCK_DEP_VERSIONS = {
-    "foo": "1.0.0",
-    "bar": "git-repo @ git+https://github.com/example/user/bar.git@1.2.3",
-    "baz": "0.1.0",
-    "spam": "3.2.12",
-    "egg": "13.0",
-    "pip": "2.12.1",
-    "wheel": "1.1.1",
-    "notused": "201.10.1",
-    "DevDep": "0.1.1",
-    "testDep": "0.1.3",
-    "abbreviation": "1.2.1",
-    "requests": "0.2.0",
-    "fake-pkg": "0.0.1",
-}
+_MOCK_DEP_VERSIONS = GRAPH.dep_versions()
 
 _DEEP_DEPENDENCIES = collections.OrderedDict(
     [
@@ -146,7 +115,7 @@ def mock_subprocess_run(*args, **kwargs):
 
 
 def test_search_source_for_used_packages(source_files):
-    """Source code is searched and aquires the name of all packages used"""
+    """Source code is searched and acquires the name of all packages used"""
     pkgs = realreq.search_source(source_files)
     expected = [
         "requests",
@@ -167,7 +136,7 @@ def test_build_dependency_list(mocker):
 
     pkgs = ["requests", "foo", "local_module2", "abbreviation", "fake-pkg"]
     dep_tree = requtils.build_dep_list(pkgs)
-    expected = list(_MOCK_DEPENDENCY_TREE.keys())
+    expected = list(graph_data.GraphTestData(GRAPH_PATH, subset=pkgs).dep_list().keys())
 
     assert all([_ in dep_tree for _ in expected])
     assert all([_ in expected for _ in dep_tree])
@@ -184,10 +153,13 @@ def test_get_dependency_versions(mocker):
         "foo": "foo==1.0.0",
         "bar": "bar==git-repo @ git+https://github.com/example/user/bar.git@1.2.3",
         "baz": "baz==0.1.0",
+        "devdep": "devdep==7.1.2",
         "spam": "spam==3.2.12",
         "egg": "egg==13.0",
+        "notused": "notused==201.10.1",
         "pip": "pip==2.12.1",
         "wheel": "wheel==1.1.1",
+        "testdep": "testdep==0.1.3",
         "abbreviation": "abbreviation==1.2.1",
         "requests": "requests==0.2.0",
         "fake-pkg": "fake-pkg==0.0.1",
