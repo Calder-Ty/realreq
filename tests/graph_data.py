@@ -80,3 +80,11 @@ class GraphTestData:
         deps = [(dep, self.config[dep]["version"]) for dep in self._dependencies]
         deps = sorted(deps, key=lambda tup: tup[0])
         return dict(deps)
+
+    def shallow_dep_versions(self) -> typing.Dict[str, str]:
+        deps = []
+        for dep in self._subset:
+            if dep in self.config.sections():
+                deps.append((dep, self.config[dep].get("version")))
+        deps = sorted(deps, key=lambda tup: tup[0])
+        return dict(deps)

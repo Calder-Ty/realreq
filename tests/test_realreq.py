@@ -51,28 +51,6 @@ _MOCK_DEPENDENCY_TREE_OUTPUT = """- abbreviation
     |- requests
 """
 
-_DEEP_DEPENDENCIES = collections.OrderedDict(
-    [
-        ("abbreviation", "1.2.1"),
-        ("bar", "git-repo @ git+https://github.com/example/user/bar.git@1.2.3"),
-        ("baz", "0.1.0"),
-        ("egg", "13.0"),
-        ("foo", "1.0.0"),
-        ("pip", "2.12.1"),
-        ("requests", "0.2.0"),
-        ("spam", "3.2.12"),
-        ("wheel", "1.1.1"),
-    ]
-)
-
-_SHALLOW_DEPENDENCIES = collections.OrderedDict(
-    [
-        ("abbreviation", "1.2.1"),
-        ("foo", "1.0.0"),
-        ("requests", "0.2.0"),
-    ]
-)
-
 
 def mock_pip_show(*args, **kwargs):
     pkgs = args[0][2:]
@@ -234,9 +212,11 @@ class TestCLI:
     def test_default_flags(self, source_flag, source_files):
         args = ArgvBuilder().add_flag(source_flag(source_files)).arguments()
         actual = self.execute_with_args(args)
-        assert actual == "".join(
-            "{0}=={1}\n".format(k, v) for k, v in _SHALLOW_DEPENDENCIES.items()
+        graph = graph_data.GraphTestData(
+            GRAPH_PATH, subset=["requests", "foo", "abbreviation", "fake_pkg"]
         )
+        expected = graph.shallow_dep_versions()
+        assert actual == "".join("{0}=={1}\n".format(k, v) for k, v in expected.items())
 
     def test_deep_flag(self, source_flag, source_files, deep_flag):
         args = (
