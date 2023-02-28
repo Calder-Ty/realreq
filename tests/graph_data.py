@@ -69,12 +69,6 @@ class GraphTestData:
     def dep_list(self) -> typing.Dict[str, str]:
         return self._dependencies
 
-    def inverted_list(self) -> typing.Dict[str, str]:
-        return {
-            key: _config_list(self.config[key]["dependents"])
-            for key in self.config.sections()
-        }
-
     def dep_versions(self) -> typing.Dict[str, str]:
         """Returns a Dictionary that is Ordered to be in alphabetical order"""
         deps = [(dep, self.config[dep]["version"]) for dep in self._dependencies]
