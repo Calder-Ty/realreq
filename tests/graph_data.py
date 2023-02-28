@@ -77,6 +77,6 @@ class GraphTestData:
 
     def dep_versions(self) -> typing.Dict[str, str]:
         """Returns a Dictionary that is Ordered to be in alphabetical order"""
-        deps = [(dep, self.config[dep]["version"]) for dep in self.config.sections()]
+        deps = [(dep, self.config[dep]["version"]) for dep in self._dependencies]
         deps = sorted(deps, key=lambda tup: tup[0])
         return dict(deps)

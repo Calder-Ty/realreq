@@ -132,6 +132,7 @@ show_out: Name: wheel
 
 [abbreviation]
 version: 1.2.1
+alias: abbrev
 show_out: Name: abbreviation
 	Version: 1.2.1
 	Summary: abbreviation: Your CODE ON STEROIDS
