@@ -4,18 +4,12 @@ import pathlib
 import shutil
 import tempfile
 import typing
+import configparser
 
-CONTENT = """
-import os
-import requests
-from foo import bar
-from . import local_module
-import local_module2
-from foo.baz import frum
-import abbrev
-import src.local_module
-import fake_pkg
-"""
+cfg = configparser.ConfigParser()
+cfg.read("./tests/sources/default.cfg")
+
+CONTENT = cfg["source"]["source_text"]
 
 
 @pytest.fixture

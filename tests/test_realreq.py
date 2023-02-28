@@ -33,8 +33,8 @@ MOCK_ALIASES = {"abbrev": "abbreviation"}
 realreq.ALIASES = MOCK_ALIASES
 
 _MOCK_DEPENDENCY_TREE = GRAPH.dep_list()
-
 _MOCK_DEPENDENCY_TREE_INVERTED = GRAPH.inverted_list()
+_MOCK_DEP_VERSIONS = GRAPH.dep_versions()
 
 _MOCK_DEPENDENCY_TREE_OUTPUT = """- abbreviation
 - bar
@@ -50,8 +50,6 @@ _MOCK_DEPENDENCY_TREE_OUTPUT = """- abbreviation
   |- spam
     |- requests
 """
-
-_MOCK_DEP_VERSIONS = GRAPH.dep_versions()
 
 _DEEP_DEPENDENCIES = collections.OrderedDict(
     [
@@ -247,10 +245,12 @@ class TestCLI:
             .add_flag(deep_flag())
             .arguments()
         )
-        actual = self.execute_with_args(args)
-        assert actual == "".join(
-            "{0}=={1}\n".format(k, v) for k, v in _DEEP_DEPENDENCIES.items()
+        graph = graph_data.GraphTestData(
+            GRAPH_PATH, subset=["requests", "foo", "abbreviation", "fake_pkg"]
         )
+        expected = graph.dep_versions()
+        actual = self.execute_with_args(args)
+        assert actual == "".join("{0}=={1}\n".format(k, v) for k, v in expected.items())
 
     def test_cli_aliases(
         self,
