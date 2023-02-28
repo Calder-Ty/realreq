@@ -33,7 +33,6 @@ MOCK_ALIASES = {"abbrev": "abbreviation"}
 realreq.ALIASES = MOCK_ALIASES
 
 _MOCK_DEPENDENCY_TREE = GRAPH.dep_list()
-_MOCK_DEPENDENCY_TREE_INVERTED = GRAPH.inverted_list()
 _MOCK_DEP_VERSIONS = GRAPH.dep_versions()
 
 _MOCK_DEPENDENCY_TREE_OUTPUT = """- abbreviation
