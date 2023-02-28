@@ -28,12 +28,9 @@ import _realreq.requtils as requtils
 HERE = pathlib.Path(__file__).parent
 GRAPH_PATH = HERE / "dependency_graphs/default.graph"
 GRAPH = graph_data.GraphTestData(HERE / "dependency_graphs/default.graph")
-
+# Use Abbrev to test builtin ALIASES
 MOCK_ALIASES = {"abbrev": "abbreviation"}
 realreq.ALIASES = MOCK_ALIASES
-
-_MOCK_DEPENDENCY_TREE = GRAPH.dep_list()
-_MOCK_DEP_VERSIONS = GRAPH.dep_versions()
 
 _MOCK_DEPENDENCY_TREE_OUTPUT = """- abbreviation
 - bar
@@ -56,7 +53,7 @@ def mock_pip_show(*args, **kwargs):
     pkg_output = []
     for pkg in pkgs:
         try:
-            deps = _MOCK_DEPENDENCY_TREE[pkg]
+            deps = GRAPH.dep_list()[pkg]
         except KeyError:
             continue
         pkg_output.append(
@@ -73,7 +70,7 @@ def mock_pip_show(*args, **kwargs):
 
 def mock_pip_freeze(*args, **kwargs):
     result = b"\n".join(
-        ["{0}=={1}".format(k, v).encode() for k, v in _MOCK_DEP_VERSIONS.items()]
+        ["{0}=={1}".format(k, v).encode() for k, v in GRAPH.dep_versions().items()]
     )
     mock_result = unittest.mock.MagicMock()
     mock_result.configure_mock(**{"stdout": result})
@@ -122,7 +119,7 @@ def test_get_dependency_versions(mocker):
     mock_run = mocker.patch("subprocess.run")
     mock_run.side_effect = mock_pip_freeze
 
-    pkgs = _MOCK_DEPENDENCY_TREE.keys()
+    pkgs = GRAPH.dep_list().keys()
     versions = requtils.get_dependency_versions(pkgs)
     assert versions == {
         "foo": "foo==1.0.0",
