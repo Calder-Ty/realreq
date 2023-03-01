@@ -82,3 +82,6 @@ class GraphTestData:
                 deps.append((dep, self.config[dep].get("version")))
         deps = sorted(deps, key=lambda tup: tup[0])
         return dict(deps)
+
+    def show_output(self, pkg):
+        return self.config[pkg]["show_out"]

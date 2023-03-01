@@ -53,14 +53,10 @@ def mock_pip_show(*args, **kwargs):
     pkg_output = []
     for pkg in pkgs:
         try:
-            deps = GRAPH.dep_list()[pkg]
+            deps = GRAPH.show_output(pkg)
         except KeyError:
             continue
-        pkg_output.append(
-            "Name: {name}\nstuff\nRequires: {deps}\nmore stuff\n".format(
-                name=pkg, deps=", ".join(deps)
-            )
-        )
+        pkg_output.append(deps)
 
     mock_result = unittest.mock.MagicMock()
     mock_result.configure_mock(**{"stdout": "---\n".join(pkg_output).encode()})
