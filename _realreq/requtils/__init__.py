@@ -9,7 +9,7 @@ from . import dependency_tree as dep_graph
 IMPORT_RE = re.compile(
     r"(from )?(?(1)(?P<from>[a-zA-Z0-9._]*)|import (?P<import>[a-zA-Z0-9+._]*))"
 )
-PIP_SHOW_SEP = "---\n"
+PIP_SHOW_SEP = "\n---\n"
 
 
 class ParsedShowOutput(typing.NamedTuple):
@@ -46,6 +46,7 @@ def build_dep_tree(pkgs: typing.List[str]) -> dep_graph.DependencyGraph:
             break
 
         found_deps = set()
+
         for out in results.stdout.decode().split(PIP_SHOW_SEP):
             p = get_deps_from_output(out)
             dependencies.add_node(p.name)
@@ -71,6 +72,7 @@ def pip_show(pkgs_: typing.Set[str]) -> typing.Optional[subprocess.CompletedProc
         )
     except subprocess.CalledProcessError as err:
         return handle_pip_show_error(err)
+
 
 def handle_pip_show_error(err: subprocess.CalledProcessError):
     err_message = err.stderr.decode()
