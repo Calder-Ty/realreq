@@ -59,7 +59,7 @@ def mock_pip_show(*args, **kwargs):
         pkg_output.append(deps)
 
     mock_result = unittest.mock.MagicMock()
-    mock_result.configure_mock(**{"stdout": "---\n".join(pkg_output).encode()})
+    mock_result.configure_mock(**{"stdout": "\n---\n".join(pkg_output).encode()})
 
     return mock_result
 

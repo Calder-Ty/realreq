@@ -65,6 +65,11 @@ show_out: Name: baz
 	Author: Jim Bob, Beau Jangle
 	Author-email: None
 	License: MIT
+		\tLots of cool text
+		\tthis is because things are sometimes crazy
+		\t---
+		\tMore Licenses
+		\tMore
 	Location: /usr/lib/python3.9/site-packages
 	Requires:
 	Required-by:
