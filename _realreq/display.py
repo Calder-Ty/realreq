@@ -14,7 +14,7 @@ class FreezeDisplay:
     def display(_cls, dependency_tree: requtils.dependency_tree.DependencyGraph):
         pkgs = dependency_tree.nodes()
         dep_ver = requtils.get_dependency_versions(pkgs)
-        sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0])
+        sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0].lower())
         print("\n".join(["{0}".format(v) for _, v in sorted_list]))
 
 
@@ -27,7 +27,7 @@ class TreeDisplay:
     def display(_cls, dependency_tree: requtils.dependency_tree.DependencyGraph):
         pkgs = dependency_tree.nodes()
         dep_ver = requtils.get_dependency_versions(pkgs)
-        sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0])
+        sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0].lower())
 
         # TODO: this will double print trees
         for (pkg, _) in sorted_list:
