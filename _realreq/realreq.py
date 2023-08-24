@@ -92,7 +92,7 @@ class RealReq:
         # We handle seperately, lets unify the handling
         else:
             dep_ver = requtils.get_dependency_versions(pkgs)
-            sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0])
+            sorted_list = sorted(list(dep_ver.items()), key=lambda x: x[0].lower())
             print("\n".join(["{0}".format(v) for _, v in sorted_list]))
 
     def _read_aliases(self) -> typing.Dict[str, str]:
