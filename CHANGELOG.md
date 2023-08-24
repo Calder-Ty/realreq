@@ -1,7 +1,15 @@
 # Changelog
 
 ## [unreleased]
+
+## 0.7.4
+### Fixes/improvments
+- Fix: Issue where dependencies were sorted case-sensitively
+
+## 0.7.3
+### Fixes/Improvements
 - Fix: Bug in dependency tree where I forgot to raise error
+
 ## 0.7.2
 ### Fixes/Improvements
 - fixed bug where infinite loop could be created
